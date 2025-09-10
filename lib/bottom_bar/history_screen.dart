@@ -104,37 +104,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.primaryGreen,
-        title: Text(
-          'Spray Records',
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.bold,
-            fontSize: screenWidth * 0.05,
-            color: Colors.white,
-          ),
+      body: SafeArea(
+        child: CustomScrollView(
+          slivers: [
+            SliverPadding(
+              padding: EdgeInsets.all(screenWidth * 0.04),
+              sliver: selectedCard == null
+                  ? _buildSummaryView(screenWidth, screenHeight)
+                  : _buildDetailView(screenWidth, screenHeight),
+            ),
+          ],
         ),
-        automaticallyImplyLeading: false,
-        leading: selectedCard != null
-            ? IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
-                onPressed: () {
-                  setState(() {
-                    selectedCard = null;
-                  });
-                },
-              )
-            : null,
-      ),
-      body: CustomScrollView(
-        slivers: [
-          SliverPadding(
-            padding: EdgeInsets.all(screenWidth * 0.04),
-            sliver: selectedCard == null
-                ? _buildSummaryView(screenWidth, screenHeight)
-                : _buildDetailView(screenWidth, screenHeight),
-          ),
-        ],
       ),
     );
   }
@@ -229,13 +209,26 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
     return SliverList(
       delegate: SliverChildListDelegate([
-        Text(
-          selectedCard?['title'] as String? ?? 'Details',
-          style: GoogleFonts.poppins(
-            fontSize: screenWidth * 0.06,
-            fontWeight: FontWeight.w600,
-            color: AppColors.primaryGreen,
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              selectedCard?['title'] as String? ?? 'Details',
+              style: GoogleFonts.poppins(
+                fontSize: screenWidth * 0.06,
+                fontWeight: FontWeight.w600,
+                color: AppColors.primaryGreen,
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.arrow_back, color: AppColors.primaryGreen, size: 28),
+              onPressed: () {
+                setState(() {
+                  selectedCard = null;
+                });
+              },
+            ),
+          ],
         ),
         SizedBox(height: screenHeight * 0.02),
         Text(

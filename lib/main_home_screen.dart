@@ -1,3 +1,4 @@
+import 'package:agro_stick/bottom_bar/crop_health_screen.dart';
 import 'package:agro_stick/bottom_bar/history_screen.dart';
 import 'package:agro_stick/bottom_bar/home_screen.dart';
 import 'package:flutter/material.dart';
@@ -17,7 +18,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
   static const List<Widget> _screens = <Widget>[
     HomeScreen(),
     HistoryScreen(),
-    CropHealthTab(),
+    CropHealthScreen(),
     SettingsTab(),
   ];
 
@@ -77,20 +78,7 @@ class ScheduleTab extends StatelessWidget {
   }
 }
 
-// Crop Health Tab
-class CropHealthTab extends StatelessWidget {
-  const CropHealthTab({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        'Crop Health: Insights & Analysis',
-        style: GoogleFonts.poppins(fontSize: 20),
-      ),
-    );
-  }
-}
+ 
 
 // Settings Tab
 class SettingsTab extends StatelessWidget {
