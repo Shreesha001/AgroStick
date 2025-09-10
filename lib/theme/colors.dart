@@ -9,6 +9,6 @@ class AppColors {
   static const Color backgroundColor = Color(0xFFF1F8E9); // Light greenish background
   static const Color whiteColor = Color(0xFFFFFFFF);
   static const Color greyColor = Color(0xFF757575);
-  static const Color primaryGreen = Color(0xFF464f84);
+  static const Color primaryGreen = Color.fromARGB(255, 70, 132, 75);
   static const Color shadowGrey = Color(0xFF616161);
 }

@@ -1,40 +1,124 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'auth_screens/login_screen.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:agro_stick/theme/colors.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
-  Future<void> _logout(BuildContext context) async {
-    await FirebaseAuth.instance.signOut();
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginScreen()),
-    );
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _selectedIndex = 0;
+
+  static const List<Widget> _screens = <Widget>[
+    HomeTab(),
+    ScheduleTab(),
+    CropHealthTab(),
+    SettingsTab(),
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Home Screen'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => _logout(context),
+        title: Text(
+          'Agrostick',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: AppColors.primaryGreen,
+      ),
+      body: _screens[_selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        selectedItemColor: AppColors.primaryGreen,
+        unselectedItemColor: Colors.grey,
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.schedule),
+            label: 'Schedule',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.local_florist),
+            label: 'Crop Health',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'Settings',
           ),
         ],
       ),
-      body: Center(
-        child: Text(
-          user != null
-              ? 'Welcome, ${user.email?.split('@')[0]}!'
-              : 'Welcome to Agrostick!',
-          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          textAlign: TextAlign.center,
-        ),
+    );
+  }
+}
+
+// Home Tab
+class HomeTab extends StatelessWidget {
+  const HomeTab({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text(
+        'Home: Device Control',
+        style: GoogleFonts.poppins(fontSize: 20),
+      ),
+    );
+  }
+}
+
+// Schedule Tab
+class ScheduleTab extends StatelessWidget {
+  const ScheduleTab({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text(
+        'Schedule: Manage Spray Tasks',
+        style: GoogleFonts.poppins(fontSize: 20),
+      ),
+    );
+  }
+}
+
+// Crop Health Tab
+class CropHealthTab extends StatelessWidget {
+  const CropHealthTab({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text(
+        'Crop Health: Insights & Analysis',
+        style: GoogleFonts.poppins(fontSize: 20),
+      ),
+    );
+  }
+}
+
+// Settings Tab
+class SettingsTab extends StatelessWidget {
+  const SettingsTab({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text(
+        'Settings: Manage Account & App',
+        style: GoogleFonts.poppins(fontSize: 20),
       ),
     );
   }
