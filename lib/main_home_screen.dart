@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:agro_stick/theme/colors.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class MainHomeScreen extends StatefulWidget {
+  const MainHomeScreen({super.key});
 
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  _MainHomeScreenState createState() => _MainHomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _MainHomeScreenState extends State<MainHomeScreen> {
   int _selectedIndex = 0;
 
   static const List<Widget> _screens = <Widget>[

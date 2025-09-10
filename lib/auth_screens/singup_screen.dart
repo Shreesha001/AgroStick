@@ -1,4 +1,4 @@
-import 'package:agro_stick/home_screen.dart';
+import 'package:agro_stick/main_home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -40,7 +40,7 @@ class _SignupScreenState extends State<SignupScreen> {
         if (mounted) {
   Navigator.pushReplacement(
     context,
-    MaterialPageRoute(builder: (context) => const HomeScreen()),
+    MaterialPageRoute(builder: (context) => const MainHomeScreen()),
   );
 }
 
