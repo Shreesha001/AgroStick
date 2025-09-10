@@ -1,3 +1,4 @@
+import 'package:agro_stick/bottom_bar/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:agro_stick/theme/colors.dart';
@@ -13,7 +14,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
   int _selectedIndex = 0;
 
   static const List<Widget> _screens = <Widget>[
-    HomeTab(),
+    HomeScreen(),
     ScheduleTab(),
     CropHealthTab(),
     SettingsTab(),
@@ -28,13 +29,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Agrostick',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: AppColors.primaryGreen,
-      ),
+      
       body: _screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         selectedItemColor: AppColors.primaryGreen,
@@ -64,20 +59,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
   }
 }
 
-// Home Tab
-class HomeTab extends StatelessWidget {
-  const HomeTab({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        'Home: Device Control',
-        style: GoogleFonts.poppins(fontSize: 20),
-      ),
-    );
-  }
-}
+ 
 
 // Schedule Tab
 class ScheduleTab extends StatelessWidget {
