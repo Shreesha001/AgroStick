@@ -1,30 +1,82 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:agro_stick/auth_screens/login_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:agro_stick/theme/colors.dart';
+import 'package:agro_stick/auth_screens/login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  _ProfileScreenState createState() => _ProfileScreenState();
+  State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  final User? user = FirebaseAuth.instance.currentUser;
+  final _nameController = TextEditingController();
+  final _phoneController = TextEditingController(); 
+  final _farmNameController = TextEditingController();
 
-  String selectedLanguage = 'English';
-  List<String> languages = ['English', 'Hindi', 'Punjabi'];
+  String _selectedLanguage = 'English';
+  final List<String> _languages = ['English', 'Hindi', 'Punjabi'];
+
+  String? _userId;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    final user = FirebaseAuth.instance.currentUser;
+    _userId = user?.uid;
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    if (_userId == null) return;
+
+    final doc = await FirebaseFirestore.instance.collection('users').doc(_userId).get();
+
+    if (!mounted) return;
+
+    setState(() {
+      _nameController.text = doc.exists ? (doc.data()?['name'] ?? '') : '';
+      _phoneController.text = doc.exists ? (doc.data()?['phone'] ?? '') : ''; 
+      _farmNameController.text = doc.exists ? (doc.data()?['farmName'] ?? '') : '';
+      _selectedLanguage = doc.exists ? (doc.data()?['language'] ?? 'English') : 'English';
+      _isLoading = false;
+    });
+  }
+
+  Future<void> _updateProfile() async {
+    if (_userId == null) return;
+
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(_userId).set({
+        'name': _nameController.text.trim(),
+        'phone': _phoneController.text.trim(), 
+        'farmName': _farmNameController.text.trim(),
+        'language': _selectedLanguage,
+      }, SetOptions(merge: true));
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profile updated successfully')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error updating profile: $e')),
+      );
+    }
+  }
 
   Future<void> _logout() async {
     await FirebaseAuth.instance.signOut();
-    if (mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
-      );
-    }
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
+    );
   }
 
   @override
@@ -33,6 +85,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
+      backgroundColor: AppColors.lightGreen.withOpacity(0.1),
       appBar: AppBar(
         backgroundColor: AppColors.primaryGreen,
         title: Text(
@@ -40,142 +93,126 @@ class _ProfileScreenState extends State<ProfileScreen> {
           style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(screenWidth * 0.05),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Profile Picture
-            Center(
-              child: CircleAvatar(
-                radius: 50,
-                backgroundColor: AppColors.primaryGreen.withOpacity(0.3),
-                child: Icon(
-                  Icons.person,
-                  color: AppColors.primaryGreen,
-                  size: 60,
-                ),
-              ),
-            ),
-            SizedBox(height: screenHeight * 0.03),
-
-            // User Info
-            _buildInfoCard("Name", user?.displayName ?? "N/A", screenWidth),
-            SizedBox(height: screenHeight * 0.02),
-            _buildInfoCard("Email", user?.email ?? "N/A", screenWidth),
-            SizedBox(height: screenHeight * 0.02),
-            _buildInfoCard("Phone", user?.phoneNumber ?? "N/A", screenWidth),
-            SizedBox(height: screenHeight * 0.02),
-            _buildInfoCard("Farm Name", "My Paddy Field", screenWidth),
-            SizedBox(height: screenHeight * 0.02),
-
-            // Language Selection
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04, vertical: screenHeight * 0.02),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.2),
-                    spreadRadius: 2,
-                    blurRadius: 5,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: EdgeInsets.all(screenWidth * 0.05),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    'Language',
-                    style: GoogleFonts.poppins(
-                      fontSize: screenWidth * 0.045,
-                      fontWeight: FontWeight.w500,
+                  // Card container for fields
+                  Card(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                    elevation: 3,
+                    color: Colors.white,
+                    child: Padding(
+                      padding: EdgeInsets.all(screenWidth * 0.05),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            'Personal Information',
+                            style: GoogleFonts.poppins(
+                              fontSize: screenWidth * 0.05,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primaryGreen,
+                            ),
+                          ),
+                          const SizedBox(height: 15),
+                          _buildTextField('Name', _nameController),
+                          _buildTextField('Phone', _phoneController, keyboardType: TextInputType.phone), 
+                          _buildTextField('Farm Name', _farmNameController),
+                          const SizedBox(height: 15),
+                          Text(
+                            'Language',
+                            style: GoogleFonts.poppins(
+                              fontSize: screenWidth * 0.045,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.primaryGreen,
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          DropdownButton<String>(
+                            value: _selectedLanguage,
+                            items: _languages.map((lang) {
+                              return DropdownMenuItem(
+                                value: lang,
+                                child: Text(lang),
+                              );
+                            }).toList(),
+                            onChanged: (val) {
+                              if (val != null && mounted) {
+                                setState(() {
+                                  _selectedLanguage = val;
+                                });
+                              }
+                            },
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  DropdownButton<String>(
-                    value: selectedLanguage,
-                    items: languages.map((String lang) {
-                      return DropdownMenuItem<String>(
-                        value: lang,
-                        child: Text(lang, style: GoogleFonts.poppins()),
-                      );
-                    }).toList(),
-                    onChanged: (String? value) {
-                      setState(() {
-                        if (value != null) selectedLanguage = value;
-                        // Here you can call your localization method to change language
-                      });
-                    },
+                  SizedBox(height: screenHeight * 0.03),
+                  ElevatedButton(
+                    onPressed: _updateProfile,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryGreen,
+                      minimumSize: Size(double.infinity, screenHeight * 0.07),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    child: Text(
+                      'Save Profile',
+                      style: GoogleFonts.poppins(
+                        fontSize: screenWidth * 0.045,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+                  ElevatedButton(
+                    onPressed: _logout,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.redAccent,
+                      minimumSize: Size(double.infinity, screenHeight * 0.07),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    child: Text(
+                      'Logout',
+                      style: GoogleFonts.poppins(
+                        fontSize: screenWidth * 0.045,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
-            SizedBox(height: screenHeight * 0.05),
-
-            // Logout Button
-            Center(
-              child: ElevatedButton(
-                onPressed: _logout,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  minimumSize: Size(double.infinity, screenHeight * 0.07),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                child: Text(
-                  'Logout',
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.bold,
-                    fontSize: screenWidth * 0.045,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
-  // Helper widget for info cards
-  Widget _buildInfoCard(String title, String value, double screenWidth) {
-    return Container(
-      padding: EdgeInsets.all(screenWidth * 0.04),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            spreadRadius: 2,
-            blurRadius: 5,
-            offset: const Offset(0, 3),
+  Widget _buildTextField(String label, TextEditingController controller,
+      {bool readOnly = false, TextInputType keyboardType = TextInputType.text}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: TextField(
+        controller: controller,
+        readOnly: readOnly,
+        keyboardType: keyboardType,
+        style: GoogleFonts.poppins(fontSize: 16),
+        decoration: InputDecoration(
+          labelText: label,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
           ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            title,
-            style: GoogleFonts.poppins(
-              fontSize: screenWidth * 0.045,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          Text(
-            value,
-            style: GoogleFonts.poppins(
-              fontSize: screenWidth * 0.045,
-              fontWeight: FontWeight.w500,
-              color: AppColors.primaryGreen,
-            ),
-          ),
-        ],
+          filled: true,
+          fillColor: Colors.grey[100],
+        ),
       ),
     );
   }
