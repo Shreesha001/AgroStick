@@ -1,6 +1,7 @@
 import 'package:agro_stick/bottom_bar/crop_health_screen.dart';
 import 'package:agro_stick/bottom_bar/history_screen.dart';
 import 'package:agro_stick/bottom_bar/home_screen.dart';
+import 'package:agro_stick/bottom_bar/profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:agro_stick/theme/colors.dart';
@@ -19,7 +20,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
     HomeScreen(),
     HistoryScreen(),
     CropHealthScreen(),
-    SettingsTab(),
+    ProfileScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -52,8 +53,8 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
             label: 'Crop Health',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Settings',
+            icon: Icon(Icons.person),
+            label: 'Profile',
           ),
         ],
       ),
@@ -62,35 +63,4 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
 }
 
  
-
-// Schedule Tab
-class ScheduleTab extends StatelessWidget {
-  const ScheduleTab({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        'Schedule: Manage Spray Tasks',
-        style: GoogleFonts.poppins(fontSize: 20),
-      ),
-    );
-  }
-}
-
  
-
-// Settings Tab
-class SettingsTab extends StatelessWidget {
-  const SettingsTab({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        'Settings: Manage Account & App',
-        style: GoogleFonts.poppins(fontSize: 20),
-      ),
-    );
-  }
-}

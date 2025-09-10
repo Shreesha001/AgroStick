@@ -104,6 +104,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: AppColors.primaryGreen,
+        title: Text(
+          'Spray History',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+        ),
+      ),
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
@@ -122,14 +129,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget _buildSummaryView(double screenWidth, double screenHeight) {
     return SliverList(
       delegate: SliverChildListDelegate([
-        Text(
-          'Your Spray Summary',
-          style: GoogleFonts.poppins(
-            fontSize: screenWidth * 0.06,
-            fontWeight: FontWeight.w600,
-            color: AppColors.primaryGreen,
-          ),
-        ),
+        
         SizedBox(height: screenHeight * 0.02),
         GridView.builder(
           shrinkWrap: true,
