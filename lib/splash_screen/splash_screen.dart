@@ -44,8 +44,8 @@ class _SplashScreenState extends State<SplashScreen> {
               // Logo with simple fade-in and scale
               Image.asset(
                 'assets/logo.png', // Replace with your logo image
-                width: 120,
-                height: 120,
+                width: 160,
+                height: 160,
               )
                   .animate()
                   .fadeIn(duration: 1000.ms)
