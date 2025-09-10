@@ -1,3 +1,4 @@
+import 'package:agro_stick/bottom_bar/history_screen.dart';
 import 'package:agro_stick/bottom_bar/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -15,7 +16,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
 
   static const List<Widget> _screens = <Widget>[
     HomeScreen(),
-    ScheduleTab(),
+    HistoryScreen(),
     CropHealthTab(),
     SettingsTab(),
   ];
@@ -42,8 +43,8 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.schedule),
-            label: 'Schedule',
+            icon: Icon(Icons.history),
+            label: 'History',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.local_florist),
