@@ -1,3 +1,4 @@
+import 'package:agro_stick/auth_screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -18,7 +19,7 @@ class _SplashScreenState extends State<SplashScreen> {
     Future.delayed(const Duration(seconds: 3), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
       );
     });
   }
@@ -44,8 +45,8 @@ class _SplashScreenState extends State<SplashScreen> {
               // Logo with simple fade-in and scale
               Image.asset(
                 'assets/logo.png', // Replace with your logo image
-                width: 160,
-                height: 160,
+                width: 200,
+                height: 200,
               )
                   .animate()
                   .fadeIn(duration: 1000.ms)
@@ -100,7 +101,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   ),
               const SizedBox(height: 20),
               // Simple circular loader
-              CircularProgressIndicator(
+              CircularProgressIndicator(  
                 valueColor: AlwaysStoppedAnimation<Color>(AppColors.goldenAccent),
                 strokeWidth: 2.0,
               ).animate().fadeIn(duration: 1400.ms),
@@ -111,16 +112,4 @@ class _SplashScreenState extends State<SplashScreen> {
     );
   }
 }
-
-// Placeholder for the next screen
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Agrostick Home')),
-      body: const Center(child: Text('Welcome to Agrostick!')),
-    );
-  }
-}
+ 
