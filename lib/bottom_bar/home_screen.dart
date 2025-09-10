@@ -19,7 +19,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String _soilMoisture = 'Optimal';
   String _sprayStatus = 'Idle';
   String _temperature = '28°C';
- 
+
   void _startSpray() {
     setState(() {
       _sprayStatus = 'Spraying';
@@ -65,15 +65,22 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           Icon(icon, color: color, size: screenWidth * 0.08),
           SizedBox(height: 10),
-          Text(title,
-              style: GoogleFonts.poppins(
-                  fontSize: screenWidth * 0.035, color: Colors.grey)),
+          Text(
+            title,
+            style: GoogleFonts.poppins(
+              fontSize: screenWidth * 0.035,
+              color: Colors.grey,
+            ),
+          ),
           SizedBox(height: 5),
-          Text(value,
-              style: GoogleFonts.poppins(
-                  fontSize: screenWidth * 0.04,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primaryGreen)),
+          Text(
+            value,
+            style: GoogleFonts.poppins(
+              fontSize: screenWidth * 0.04,
+              fontWeight: FontWeight.bold,
+              color: AppColors.primaryGreen,
+            ),
+          ),
         ],
       ),
     );
@@ -86,110 +93,104 @@ class _HomeScreenState extends State<HomeScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.primaryGreen,
-        title: Text(
-          'Agrostick Dashboard',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
-        ),
-        automaticallyImplyLeading: false, // Removes the back arrow
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(screenWidth * 0.05),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              user != null ? 'Hi, ${user.email?.split("@")[0]}!' : 'Welcome!',
-              style: GoogleFonts.poppins(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(screenWidth * 0.05),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                user != null ? 'Hi, ${user.email?.split("@")[0]}!' : 'Welcome!',
+                style: GoogleFonts.poppins(
                   fontSize: screenWidth * 0.06,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.primaryGreen),
-            ),
-            SizedBox(height: screenHeight * 0.03),
-
-            // Sensor Data Grid (2 per row)
-            Wrap(
-              spacing: 10,
-              runSpacing: 15,
-              children: [
-                dataCard('ESP32-S3 Connection',
+                  color: AppColors.primaryGreen,
+                ),
+              ),
+              SizedBox(height: screenHeight * 0.03),
+              // Sensor Data Grid (2 per row)
+              Wrap(
+                spacing: 10,
+                runSpacing: 15,
+                children: [
+                  dataCard(
+                    'ESP32-S3 Connection',
                     _isDeviceConnected ? 'Connected' : 'Disconnected',
                     _isDeviceConnected ? Colors.green : Colors.red,
                     Icons.wifi,
-                    screenWidth),
-                dataCard('Battery Level', _batteryLevel, Colors.orange,
-                    Icons.battery_full, screenWidth),
-                dataCard('Humidity', _humidity, Colors.blue, Icons.water_drop,
-                    screenWidth),
-                dataCard('Soil Condition', _soilMoisture, Colors.brown, Icons.grass,
-                    screenWidth),
-                dataCard('Temperature', _temperature, Colors.red, Icons.thermostat,
-                    screenWidth),
-                dataCard('Spray Status', _sprayStatus,
+                    screenWidth,
+                  ),
+                  dataCard('Battery Level', _batteryLevel, Colors.orange, Icons.battery_full, screenWidth),
+                  dataCard('Humidity', _humidity, Colors.blue, Icons.water_drop, screenWidth),
+                  dataCard('Soil Condition', _soilMoisture, Colors.brown, Icons.grass, screenWidth),
+                  dataCard('Temperature', _temperature, Colors.red, Icons.thermostat, screenWidth),
+                  dataCard(
+                    'Spray Status',
+                    _sprayStatus,
                     _sprayStatus == 'Spraying' ? Colors.green : Colors.grey,
                     Icons.water_drop,
-                    screenWidth),
-              ],
-            ),
-            SizedBox(height: screenHeight * 0.04),
-
-            // Quick Actions
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: _startSpray,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryGreen,
-                    minimumSize: Size(screenWidth * 0.42, screenHeight * 0.07),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20)),
+                    screenWidth,
                   ),
-                  child: Text(
-                    'Start Spray',
-                    style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.bold,
-                        fontSize: screenWidth * 0.045,
-                        color: Colors.white),
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: _stopSpray,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryGreen,
-                    minimumSize: Size(screenWidth * 0.42, screenHeight * 0.07),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20)),
-                  ),
-                  child: Text(
-                    'Stop Spray',
-                    style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.bold,
-                        fontSize: screenWidth * 0.045,
-                        color: Colors.white),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: screenHeight * 0.03),
-            ElevatedButton(
-              onPressed: _scheduleSpray,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryGreen,
-                minimumSize: Size(double.infinity, screenHeight * 0.07),
-                shape:
-                    RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                ],
               ),
-              child: Text(
-                'Schedule Spray',
-                style: GoogleFonts.poppins(
+              SizedBox(height: screenHeight * 0.04),
+              // Quick Actions
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: _startSpray,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryGreen,
+                      minimumSize: Size(screenWidth * 0.42, screenHeight * 0.07),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    ),
+                    child: Text(
+                      'Start Spray',
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.bold,
+                        fontSize: screenWidth * 0.045,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: _stopSpray,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryGreen,
+                      minimumSize: Size(screenWidth * 0.42, screenHeight * 0.07),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    ),
+                    child: Text(
+                      'Stop Spray',
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.bold,
+                        fontSize: screenWidth * 0.045,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: screenHeight * 0.03),
+              ElevatedButton(
+                onPressed: _scheduleSpray,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryGreen,
+                  minimumSize: Size(double.infinity, screenHeight * 0.07),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                ),
+                child: Text(
+                  'Schedule Spray',
+                  style: GoogleFonts.poppins(
                     fontWeight: FontWeight.bold,
                     fontSize: screenWidth * 0.045,
-                    color: Colors.white),
+                    color: Colors.white,
+                  ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
