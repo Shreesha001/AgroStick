@@ -129,7 +129,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget _buildSummaryView(double screenWidth, double screenHeight) {
     return SliverList(
       delegate: SliverChildListDelegate([
-        
         SizedBox(height: screenHeight * 0.02),
         GridView.builder(
           shrinkWrap: true,
@@ -209,205 +208,205 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
     return SliverList(
       delegate: SliverChildListDelegate([
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              selectedCard?['title'] as String? ?? 'Details',
-              style: GoogleFonts.poppins(
-                fontSize: screenWidth * 0.06,
-                fontWeight: FontWeight.w600,
-                color: AppColors.primaryGreen,
-              ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.arrow_back, color: AppColors.primaryGreen, size: 28),
-              onPressed: () {
-                setState(() {
-                  selectedCard = null;
-                });
-              },
-            ),
-          ],
-        ),
-        SizedBox(height: screenHeight * 0.02),
-        Text(
-          'Spray Details',
-          style: GoogleFonts.poppins(
-            fontSize: screenWidth * 0.05,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
-        ),
-        SizedBox(height: screenHeight * 0.01),
-        ...sprayDetails.map((detail) {
-          return Card(
-            elevation: 3,
-            margin: EdgeInsets.symmetric(vertical: screenHeight * 0.005),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: ListTile(
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: screenWidth * 0.04,
-                vertical: screenHeight * 0.01,
-              ),
-              leading: CircleAvatar(
-                backgroundColor: AppColors.primaryGreen.withOpacity(0.1),
-                child: Icon(Icons.water_drop, color: AppColors.primaryGreen, size: 28),
-              ),
-              title: Text(
-                detail['title'] as String,
+        WillPopScope(
+          onWillPop: () async {
+            setState(() {
+              selectedCard = null;
+            });
+            return false; // Prevent app from closing
+          },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                selectedCard?['title'] as String? ?? 'Details',
                 style: GoogleFonts.poppins(
+                  fontSize: screenWidth * 0.06,
                   fontWeight: FontWeight.w600,
-                  fontSize: screenWidth * 0.045,
+                  color: AppColors.primaryGreen,
                 ),
               ),
-              subtitle: Text(
-                'Time: ${detail['time']}\nAmount: ${detail['amount']}L',
+              SizedBox(height: screenHeight * 0.02),
+              Text(
+                'Spray Details',
                 style: GoogleFonts.poppins(
-                  fontSize: screenWidth * 0.04,
-                  color: Colors.grey[700],
+                  fontSize: screenWidth * 0.05,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
               ),
-              trailing: Icon(
-                Icons.arrow_forward_ios,
-                size: screenWidth * 0.04,
-                color: Colors.grey[600],
-              ),
-            ),
-          );
-        }).toList(),
-        SizedBox(height: screenHeight * 0.02),
-        Text(
-          'Spray Trend',
-          style: GoogleFonts.poppins(
-            fontSize: screenWidth * 0.05,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
-        ),
-        SizedBox(height: screenHeight * 0.01),
-        Container(
-          height: screenHeight * 0.3,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(15),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.2),
-                spreadRadius: 2,
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Padding(
-            padding: EdgeInsets.all(screenWidth * 0.04),
-            child: LineChart(
-              LineChartData(
-                gridData: FlGridData(
-                  show: true,
-                  drawVerticalLine: true,
-                  horizontalInterval: 1,
-                  verticalInterval: (spots.isNotEmpty ? spots.last.x / (xLabels.length - 1) : 1),
-                  getDrawingHorizontalLine: (value) => FlLine(
-                    color: Colors.grey.withOpacity(0.2),
-                    strokeWidth: 1,
+              SizedBox(height: screenHeight * 0.01),
+              ...sprayDetails.map((detail) {
+                return Card(
+                  elevation: 3,
+                  margin: EdgeInsets.symmetric(vertical: screenHeight * 0.005),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  getDrawingVerticalLine: (value) => FlLine(
-                    color: Colors.grey.withOpacity(0.2),
-                    strokeWidth: 1,
+                  child: ListTile(
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: screenWidth * 0.04,
+                      vertical: screenHeight * 0.01,
+                    ),
+                    leading: CircleAvatar(
+                      backgroundColor: AppColors.primaryGreen.withOpacity(0.1),
+                      child: Icon(Icons.water_drop, color: AppColors.primaryGreen, size: 28),
+                    ),
+                    title: Text(
+                      detail['title'] as String,
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600,
+                        fontSize: screenWidth * 0.045,
+                      ),
+                    ),
+                    subtitle: Text(
+                      'Time: ${detail['time']}\nAmount: ${detail['amount']}L',
+                      style: GoogleFonts.poppins(
+                        fontSize: screenWidth * 0.04,
+                        color: Colors.grey[700],
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    trailing: Icon(
+                      Icons.arrow_forward_ios,
+                      size: screenWidth * 0.04,
+                      color: Colors.grey[600],
+                    ),
                   ),
+                );
+              }).toList(),
+              SizedBox(height: screenHeight * 0.02),
+              Text(
+                'Spray Trend',
+                style: GoogleFonts.poppins(
+                  fontSize: screenWidth * 0.05,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
                 ),
-                titlesData: FlTitlesData(
-                  show: true,
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 40,
-                      interval: spots.isNotEmpty ? spots.last.x / (xLabels.length - 1) : 1,
-                      getTitlesWidget: (value, meta) {
-                        final index = ((value / (spots.isNotEmpty ? spots.last.x / (xLabels.length - 1) : 1)).round());
-                        if (index >= 0 && index < xLabels.length) {
-                          return Transform.rotate(
-                            angle: -45 * 3.141592653589793 / 180,
-                            child: Text(
-                              xLabels[index],
+              ),
+              SizedBox(height: screenHeight * 0.01),
+              Container(
+                height: screenHeight * 0.3,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(15),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.2),
+                      spreadRadius: 2,
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: EdgeInsets.all(screenWidth * 0.04),
+                  child: LineChart(
+                    LineChartData(
+                      gridData: FlGridData(
+                        show: true,
+                        drawVerticalLine: true,
+                        horizontalInterval: 1,
+                        verticalInterval: (spots.isNotEmpty ? spots.last.x / (xLabels.length - 1) : 1),
+                        getDrawingHorizontalLine: (value) => FlLine(
+                          color: Colors.grey.withOpacity(0.2),
+                          strokeWidth: 1,
+                        ),
+                        getDrawingVerticalLine: (value) => FlLine(
+                          color: Colors.grey.withOpacity(0.2),
+                          strokeWidth: 1,
+                        ),
+                      ),
+                      titlesData: FlTitlesData(
+                        show: true,
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            reservedSize: 40,
+                            interval: spots.isNotEmpty ? spots.last.x / (xLabels.length - 1) : 1,
+                            getTitlesWidget: (value, meta) {
+                              final index = ((value / (spots.isNotEmpty ? spots.last.x / (xLabels.length - 1) : 1)).round());
+                              if (index >= 0 && index < xLabels.length) {
+                                return Transform.rotate(
+                                  angle: -45 * 3.141592653589793 / 180,
+                                  child: Text(
+                                    xLabels[index],
+                                    style: GoogleFonts.poppins(
+                                      fontSize: screenWidth * 0.035,
+                                      color: Colors.grey[800],
+                                    ),
+                                    textAlign: TextAlign.right,
+                                  ),
+                                );
+                              }
+                              return const Text('');
+                            },
+                          ),
+                        ),
+                        leftTitles: AxisTitles(
+                          axisNameWidget: Text(
+                            yLabel,
+                            style: GoogleFonts.poppins(
+                              fontSize: screenWidth * 0.04,
+                              color: Colors.grey[800],
+                            ),
+                          ),
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            reservedSize: 40,
+                            getTitlesWidget: (value, meta) => Text(
+                              value.toInt().toString(),
                               style: GoogleFonts.poppins(
                                 fontSize: screenWidth * 0.035,
                                 color: Colors.grey[800],
                               ),
-                              textAlign: TextAlign.right,
                             ),
-                          );
-                        }
-                        return const Text('');
-                      },
-                    ),
-                  ),
-                  leftTitles: AxisTitles(
-                    axisNameWidget: Text(
-                      yLabel,
-                      style: GoogleFonts.poppins(
-                        fontSize: screenWidth * 0.04,
-                        color: Colors.grey[800],
+                          ),
+                        ),
+                        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                       ),
-                    ),
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 40,
-                      getTitlesWidget: (value, meta) => Text(
-                        value.toInt().toString(),
-                        style: GoogleFonts.poppins(
-                          fontSize: screenWidth * 0.035,
-                          color: Colors.grey[800],
+                      borderData: FlBorderData(
+                        show: true,
+                        border: Border.all(
+                          color: Colors.grey.withOpacity(0.3),
+                          width: 1,
                         ),
                       ),
+                      minX: spots.isNotEmpty ? spots.first.x : 0,
+                      maxX: spots.isNotEmpty ? spots.last.x : 1,
+                      minY: 0,
+                      maxY: 5,
+                      lineBarsData: [
+                        LineChartBarData(
+                          spots: spots,
+                          isCurved: true,
+                          color: AppColors.primaryGreen,
+                          barWidth: 4,
+                          dotData: FlDotData(
+                            show: true,
+                            getDotPainter: (spot, percent, bar, index) => FlDotCirclePainter(
+                              radius: 5,
+                              color: Colors.white,
+                              strokeWidth: 2,
+                              strokeColor: AppColors.primaryGreen,
+                            ),
+                          ),
+                          belowBarData: BarAreaData(
+                            show: true,
+                            color: AppColors.primaryGreen.withOpacity(0.2),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 ),
-                borderData: FlBorderData(
-                  show: true,
-                  border: Border.all(
-                    color: Colors.grey.withOpacity(0.3),
-                    width: 1,
-                  ),
-                ),
-                minX: spots.isNotEmpty ? spots.first.x : 0,
-                maxX: spots.isNotEmpty ? spots.last.x : 1,
-                minY: 0,
-                maxY: 5,
-                lineBarsData: [
-                  LineChartBarData(
-                    spots: spots,
-                    isCurved: true,
-                    color: AppColors.primaryGreen,
-                    barWidth: 4,
-                    dotData: FlDotData(
-                      show: true,
-                      getDotPainter: (spot, percent, bar, index) => FlDotCirclePainter(
-                        radius: 5,
-                        color: Colors.white,
-                        strokeWidth: 2,
-                        strokeColor: AppColors.primaryGreen,
-                      ),
-                    ),
-                    belowBarData: BarAreaData(
-                      show: true,
-                      color: AppColors.primaryGreen.withOpacity(0.2),
-                    ),
-                  ),
-                ],
               ),
-            ),
+              SizedBox(height: screenHeight * 0.02),
+            ],
           ),
         ),
-        SizedBox(height: screenHeight * 0.02),
       ]),
     );
   }
