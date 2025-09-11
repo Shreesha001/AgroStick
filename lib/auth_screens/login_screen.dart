@@ -1,3 +1,4 @@
+import 'package:agro_stick/auth_screens/service/auth_method.dart';
 import 'package:agro_stick/auth_screens/singup_screen.dart';
 import 'package:agro_stick/main_home_screen.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
+  bool _isGoogleLoading = false; // Track Google Sign-In loading state
 
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
@@ -30,10 +32,11 @@ class _LoginScreenState extends State<LoginScreen> {
           password: _passwordController.text.trim(),
         );
         if (mounted) {
-Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const MainHomeScreen()),
-      );        }
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const MainHomeScreen()),
+          );
+        }
       } on FirebaseAuthException catch (e) {
         String message;
         switch (e.code) {
@@ -64,6 +67,35 @@ Navigator.pushReplacement(
     }
   }
 
+  // Handle Google Sign-In
+  Future<void> _signInWithGoogle() async {
+    setState(() {
+      _isGoogleLoading = true;
+    });
+    try {
+      await GoogleSignInService.initSignIn();
+      final userCredential = await GoogleSignInService.signInWithGoogle();
+      if (userCredential != null && mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MainHomeScreen()),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Google Sign-In failed: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isGoogleLoading = false;
+        });
+      }
+    }
+  }
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -77,7 +109,7 @@ Navigator.pushReplacement(
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: AppColors.textPrimary, // White background
+      backgroundColor: AppColors.textPrimary,
       body: SizedBox(
         height: screenHeight,
         child: Stack(
@@ -225,20 +257,61 @@ Navigator.pushReplacement(
                       ),
                       SizedBox(height: screenHeight * 0.01),
                       Center(
-                        child: TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const SignupScreen()),
-                            );
-                          },
-                          child: Text(
-                            'Don’t have an account? Sign Up',
-                            style: GoogleFonts.poppins(
-                              fontSize: screenWidth * 0.04,
-                              color: AppColors.deepGreen,
+                        child: Column(
+                          children: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const SignupScreen()),
+                                );
+                              },
+                              child: Text(
+                                'Don’t have an account? Sign Up',
+                                style: GoogleFonts.poppins(
+                                  fontSize: screenWidth * 0.04,
+                                  color: AppColors.deepGreen,
+                                ),
+                              ),
                             ),
-                          ),
+                            Text(
+                              'or',
+                              style: GoogleFonts.poppins(
+                                fontSize: screenWidth * 0.04,
+                                color: AppColors.deepGreen,
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: _isGoogleLoading ? null : _signInWithGoogle,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Image.asset(
+                                    'assets/google_logo.png', // Google logo asset
+                                    height: screenWidth * 0.06,
+                                  ),
+                                  SizedBox(width: screenWidth * 0.02),
+                                  _isGoogleLoading
+                                      ? SizedBox(
+                                          width: 24,
+                                          height: 24,
+                                          child: CircularProgressIndicator(
+                                            valueColor: AlwaysStoppedAnimation<Color>(AppColors.deepGreen),
+                                            strokeWidth: 2,
+                                          ),
+                                        )
+                                      : Text(
+                                          'Continue with Google',
+                                          style: GoogleFonts.poppins(
+                                            fontSize: screenWidth * 0.04,
+                                            color: AppColors.deepGreen,
+                                          ),
+                                        ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -265,12 +338,10 @@ Navigator.pushReplacement(
 
     return Container(
       decoration: BoxDecoration(
-        // color: AppColors.whiteColor,
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            // color: AppColors.greyColor.withOpacity(0.2),
             color: Colors.grey.withOpacity(0.2),
             spreadRadius: 2,
             blurRadius: 5,
@@ -286,7 +357,6 @@ Navigator.pushReplacement(
           prefixIcon: Icon(icon, color: AppColors.goldenAccent),
           hintText: hintText,
           hintStyle: GoogleFonts.poppins(
-            // color: AppColors.greyColor,
             color: Colors.grey,
             fontSize: screenWidth * 0.04,
           ),
@@ -301,5 +371,3 @@ Navigator.pushReplacement(
     );
   }
 }
-
- 

@@ -16,10 +16,10 @@ class MainHomeScreen extends StatefulWidget {
 class _MainHomeScreenState extends State<MainHomeScreen> {
   int _selectedIndex = 0;
 
-  static const List<Widget> _screens = <Widget>[
+  static const List<Widget> _screens = <Widget>[  
     HomeScreen(),
-    HistoryScreen(),
     CropHealthScreen(),
+    HistoryScreen(),
     ProfileScreen(),
   ];
 
@@ -45,13 +45,14 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: 'History',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.local_florist),
             label: 'Crop Health',
           ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.history),
+            label: 'History',
+          ),
+          
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: 'Profile',
