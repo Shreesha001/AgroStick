@@ -20,30 +20,6 @@ class _HomeScreenState extends State<HomeScreen> {
   String _sprayStatus = 'Idle';
   String _temperature = '28°C';
 
-  void _startSpray() {
-    setState(() {
-      _sprayStatus = 'Spraying';
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Starting pesticide spray...')),
-    );
-  }
-
-  void _stopSpray() {
-    setState(() {
-      _sprayStatus = 'Idle';
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Stopping pesticide spray...')),
-    );
-  }
-
-  void _scheduleSpray() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Opening spray schedule...')),
-    );
-  }
-
   Widget dataCard(String title, String value, Color color, IconData icon, double screenWidth) {
     return Container(
       width: (screenWidth - 60) / 2, // 2 cards per row with spacing
@@ -108,6 +84,31 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               SizedBox(height: screenHeight * 0.03),
+              // Image in a curved box
+              Container(
+                width: double.infinity,
+                height: screenHeight * 0.25,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(15),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.2),
+                      spreadRadius: 2,
+                      blurRadius: 5,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+                  child: Image.asset(
+                    'assets/crop_image.jpg',
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+              SizedBox(height: screenHeight * 0.03),
               // Sensor Data Grid (2 per row)
               Wrap(
                 spacing: 10,
@@ -132,62 +133,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     screenWidth,
                   ),
                 ],
-              ),
-              SizedBox(height: screenHeight * 0.04),
-              // Quick Actions
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton(
-                    onPressed: _startSpray,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryGreen,
-                      minimumSize: Size(screenWidth * 0.42, screenHeight * 0.07),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                    ),
-                    child: Text(
-                      'Start Spray',
-                      style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.bold,
-                        fontSize: screenWidth * 0.045,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                  ElevatedButton(
-                    onPressed: _stopSpray,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryGreen,
-                      minimumSize: Size(screenWidth * 0.42, screenHeight * 0.07),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                    ),
-                    child: Text(
-                      'Stop Spray',
-                      style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.bold,
-                        fontSize: screenWidth * 0.045,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: screenHeight * 0.03),
-              ElevatedButton(
-                onPressed: _scheduleSpray,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryGreen,
-                  minimumSize: Size(double.infinity, screenHeight * 0.07),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                ),
-                child: Text(
-                  'Schedule Spray',
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.bold,
-                    fontSize: screenWidth * 0.045,
-                    color: Colors.white,
-                  ),
-                ),
               ),
             ],
           ),
