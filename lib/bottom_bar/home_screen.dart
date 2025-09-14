@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:agro_stick/auth_screens/login_screen.dart';
 import 'package:agro_stick/theme/colors.dart';
+import 'package:agro_stick/features/blog/models/blog_model.dart';
+import 'package:agro_stick/features/blog/services/blog_service.dart';
+import 'package:agro_stick/features/blog/screens/blog_list_screen.dart';
+import 'package:agro_stick/features/blog/screens/blog_content_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,6 +20,20 @@ class _HomeScreenState extends State<HomeScreen> {
   String _batteryLevel = '80%';
   String _sprayStatus = 'Idle';
   String _temperature = '28°C';
+  
+  // Blog data
+  List<BlogModel> _featuredBlogs = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFeaturedBlogs();
+  }
+
+  void _loadFeaturedBlogs() {
+    final allBlogs = BlogService.getBlogs();
+    _featuredBlogs = allBlogs; // Show all blogs as featured
+  }
 
   Widget dataCard(String title, String value, Color color, IconData icon, double screenWidth) {
     return Container(
@@ -56,6 +73,169 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildBlogCard(BlogModel blog, double screenWidth) {
+    return Container(
+      width: screenWidth * 0.8, // 80% of screen width
+      margin: const EdgeInsets.only(right: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => BlogContentScreen(blog: blog),
+            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Blog Image
+            ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(12),
+                topRight: Radius.circular(12),
+              ),
+              child: Container(
+                height: 120,
+                width: double.infinity,
+                color: Colors.grey[300],
+                child: Image.network(
+                  blog.imageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: Colors.grey[300],
+                      child: Icon(
+                        Icons.image,
+                        size: 40,
+                        color: Colors.grey[600],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+            
+            // Blog Content
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Category
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryGreen.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      blog.category,
+                      style: GoogleFonts.poppins(
+                        fontSize: 10,
+                        color: AppColors.primaryGreen,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 8),
+                  
+                  // Title
+                  Text(
+                    blog.title,
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  
+                  const SizedBox(height: 6),
+                  
+                  // Excerpt
+                  Text(
+                    blog.excerpt,
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                      height: 1.3,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  
+                  const SizedBox(height: 8),
+                  
+                  // Author and Read Time
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 8,
+                        backgroundColor: Colors.grey[300],
+                        backgroundImage: NetworkImage(blog.authorImage),
+                        onBackgroundImageError: (exception, stackTrace) {
+                          // Handle image error
+                        },
+                        child: blog.authorImage.isEmpty
+                            ? Icon(Icons.person, size: 12, color: Colors.grey[600])
+                            : null,
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          blog.author,
+                          style: GoogleFonts.poppins(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black87,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.access_time,
+                            size: 10,
+                            color: Colors.grey[600],
+                          ),
+                          const SizedBox(width: 2),
+                          Text(
+                            '${blog.readTime}m',
+                            style: GoogleFonts.poppins(
+                              fontSize: 10,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -141,6 +321,56 @@ class _HomeScreenState extends State<HomeScreen> {
                     screenWidth,
                   ),
                 ],
+              ),
+              
+              SizedBox(height: screenHeight * 0.04),
+              
+              // Blog Section
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Blogs',
+                    style: GoogleFonts.poppins(
+                      fontSize: screenWidth * 0.05,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const BlogListScreen(),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      'View All',
+                      style: GoogleFonts.poppins(
+                        fontSize: screenWidth * 0.04,
+                        color: AppColors.primaryGreen,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              
+              SizedBox(height: screenHeight * 0.02),
+              
+              // Horizontal Blog Cards
+              SizedBox(
+                height: 280, // Fixed height for horizontal scrolling
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.only(left: 16),
+                  itemCount: _featuredBlogs.length,
+                  itemBuilder: (context, index) {
+                    return _buildBlogCard(_featuredBlogs[index], screenWidth);
+                  },
+                ),
               ),
             ],
           ),
