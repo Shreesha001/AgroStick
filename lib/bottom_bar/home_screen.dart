@@ -15,8 +15,6 @@ class _HomeScreenState extends State<HomeScreen> {
   // Placeholder values, replace with real data from ESP32-S3
   bool _isDeviceConnected = true;
   String _batteryLevel = '80%';
-  String _humidity = '65%';
-  String _soilMoisture = 'Optimal';
   String _sprayStatus = 'Idle';
   String _temperature = '28°C';
 
@@ -121,10 +119,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     Icons.wifi,
                     screenWidth,
                   ),
-                  dataCard('Battery Level', _batteryLevel, Colors.orange, Icons.battery_full, screenWidth),
-                  dataCard('Humidity', _humidity, Colors.blue, Icons.water_drop, screenWidth),
-                  dataCard('Soil Condition', _soilMoisture, Colors.brown, Icons.grass, screenWidth),
-                  dataCard('Temperature', _temperature, Colors.red, Icons.thermostat, screenWidth),
+                  dataCard(
+                    'Battery Level',
+                    _batteryLevel,
+                    Colors.orange,
+                    Icons.battery_full,
+                    screenWidth,
+                  ),
+                  dataCard(
+                    'Temperature',
+                    _temperature,
+                    Colors.red,
+                    Icons.thermostat,
+                    screenWidth,
+                  ),
                   dataCard(
                     'Spray Status',
                     _sprayStatus,

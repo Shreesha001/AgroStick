@@ -12,14 +12,57 @@ class CropHealthScreen extends StatefulWidget {
 class _CropHealthScreenState extends State<CropHealthScreen> {
   // Placeholder data
   String cropStatus = "Healthy";
+  String _humidity = '65%';
+  String _soilMoisture = 'Optimal';
   List<Map<String, dynamic>> diseaseAlerts = [
     {"name": "Leaf Rust", "severity": "Low"},
     {"name": "Brown Spot", "severity": "Medium"},
   ];
 
+  Widget dataCard(String title, String value, Color color, IconData icon, double screenWidth) {
+    return Container(
+      width: (screenWidth - 60) / 2, // 2 cards per row with spacing
+      padding: EdgeInsets.all(screenWidth * 0.04),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            spreadRadius: 2,
+            blurRadius: 5,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: color, size: screenWidth * 0.08),
+          SizedBox(height: 10),
+          Text(
+            title,
+            style: GoogleFonts.poppins(
+              fontSize: screenWidth * 0.035,
+              color: Colors.grey,
+            ),
+          ),
+          SizedBox(height: 5),
+          Text(
+            value,
+            style: GoogleFonts.poppins(
+              fontSize: screenWidth * 0.04,
+              fontWeight: FontWeight.bold,
+              color: AppColors.primaryGreen,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _startSpray() {
     setState(() {
-      // Assuming sprayStatus is managed elsewhere; for now, just show a snackbar
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Starting pesticide spray...')),
       );
@@ -28,7 +71,6 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
 
   void _stopSpray() {
     setState(() {
-      // Assuming sprayStatus is managed elsewhere; for now, just show a snackbar
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Stopping pesticide spray...')),
       );
@@ -109,7 +151,16 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
               ),
             ),
             SizedBox(height: screenHeight * 0.03),
-
+            // Sensor Data Grid (2 per row)
+            Wrap(
+              spacing: 10,
+              runSpacing: 15,
+              children: [
+                dataCard('Humidity', _humidity, Colors.blue, Icons.water_drop, screenWidth),
+                dataCard('Soil Condition', _soilMoisture, Colors.brown, Icons.grass, screenWidth),
+              ],
+            ),
+            SizedBox(height: screenHeight * 0.03),
             // Infection Level Progress Indicator
             Container(
               padding: EdgeInsets.all(screenWidth * 0.04),
@@ -138,7 +189,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                   ),
                   SizedBox(height: 10),
                   LinearProgressIndicator(
-                    value: 0.3, // 30% infection level (placeholder)
+                    value: 0.3,
                     backgroundColor: Colors.grey[300],
                     valueColor: AlwaysStoppedAnimation<Color>(
                       Colors.orange.withOpacity(0.7),
@@ -176,7 +227,6 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
               ),
             ),
             SizedBox(height: screenHeight * 0.03),
-
             // Disease Alerts
             Text(
               'Disease Alerts',
@@ -261,7 +311,6 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                         .toList(),
                   ),
             SizedBox(height: screenHeight * 0.03),
-
             // Treatment Recommendations
             Text(
               'Treatment Recommendations',
@@ -332,7 +381,6 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
               ),
             ),
             SizedBox(height: screenHeight * 0.04),
-
             // Quick Actions
             Text(
               'Quick Actions',
