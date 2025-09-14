@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:agro_stick/features/farm_boundary/zone_division_utils.dart';
+import 'package:agro_stick/features/map/farm_boundary/zone_division_utils.dart';
 
 class NavigationService {
   /// Opens Google Maps navigation to a specific location

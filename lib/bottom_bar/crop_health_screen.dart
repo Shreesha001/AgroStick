@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:agro_stick/theme/colors.dart';
-import 'package:agro_stick/features/farm_boundary/farm_boundary_screen.dart';
+import 'package:agro_stick/features/map/farm_boundary/farm_boundary_screen.dart';
 
 class CropHealthScreen extends StatefulWidget {
   const CropHealthScreen({super.key});
