@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:agro_stick/theme/colors.dart';
+import 'package:agro_stick/features/farm_boundary/farm_boundary_screen.dart';
 
 class CropHealthScreen extends StatefulWidget {
   const CropHealthScreen({super.key});
@@ -80,6 +81,15 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
   void _scheduleSpray() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Opening spray schedule...')),
+    );
+  }
+
+  void _openFarmMapping() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const FarmBoundaryScreen(),
+      ),
     );
   }
 
@@ -381,6 +391,69 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
               ),
             ),
             SizedBox(height: screenHeight * 0.04),
+            // Farm Mapping Section
+            Container(
+              padding: EdgeInsets.all(screenWidth * 0.04),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.2),
+                    spreadRadius: 2,
+                    blurRadius: 5,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.map, color: AppColors.primaryGreen, size: 24),
+                      SizedBox(width: 8),
+                      Text(
+                        'Farm Mapping',
+                        style: GoogleFonts.poppins(
+                          fontSize: screenWidth * 0.045,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Map your farm boundary and detect disease locations with precision',
+                    style: GoogleFonts.poppins(
+                      fontSize: screenWidth * 0.04,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _openFarmMapping,
+                      icon: Icon(Icons.map, size: 20),
+                      label: Text(
+                        'Open Farm Mapping',
+                        style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryGreen,
+                        foregroundColor: Colors.white,
+                        minimumSize: Size(double.infinity, screenHeight * 0.06),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: screenHeight * 0.03),
             // Quick Actions
             Text(
               'Quick Actions',
