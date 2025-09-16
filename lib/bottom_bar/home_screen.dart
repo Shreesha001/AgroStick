@@ -126,58 +126,45 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         const SizedBox(height: 10),
-        Container(
-          height: 140,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
-                spreadRadius: 1,
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
+        SizedBox(
+          height: 105,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             itemCount: _forecast.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
             itemBuilder: (context, index) {
               final day = _forecast[index];
               final emoji = WeatherService.codeToEmoji(day.weatherCode);
               final weekday = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][day.date.weekday % 7];
               final willRain = (day.precipitationMm ?? 0) > 0;
               return Container(
-                width: 90,
-                padding: const EdgeInsets.all(10),
+                width: 84,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: Colors.grey.withOpacity(0.2)),
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(weekday, style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 6),
-                    Text(emoji, style: const TextStyle(fontSize: 22)),
-                    const SizedBox(height: 6),
+                    Text(weekday, style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 4),
+                    Text(emoji, style: const TextStyle(fontSize: 18)),
+                    const SizedBox(height: 4),
                     Text(
                       '${day.maxTempC?.toStringAsFixed(0) ?? '-'}° / ${day.minTempC?.toStringAsFixed(0) ?? '-'}°',
-                      style: GoogleFonts.poppins(fontSize: 12, color: Colors.black87),
+                      style: GoogleFonts.poppins(fontSize: 11, color: Colors.black87),
                     ),
-                    const SizedBox(height: 4),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(willRain ? Icons.umbrella : Icons.water_drop, size: 14, color: willRain ? Colors.blue : Colors.grey),
-                        const SizedBox(width: 4),
+                        Icon(willRain ? Icons.umbrella : Icons.water_drop, size: 12, color: willRain ? Colors.blue : Colors.grey),
+                        const SizedBox(width: 3),
                         Text(
                           '${(day.precipitationMm ?? 0).toStringAsFixed(0)}mm',
-                          style: GoogleFonts.poppins(fontSize: 11, color: Colors.grey[700]),
+                          style: GoogleFonts.poppins(fontSize: 10, color: Colors.grey[700]),
                         ),
                       ],
                     ),
