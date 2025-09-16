@@ -93,6 +93,12 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
     );
   }
 
+  void _scanField() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Initiating field scan...')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -438,6 +444,69 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                       icon: Icon(Icons.map, size: 20),
                       label: Text(
                         'Open Farm Mapping',
+                        style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryGreen,
+                        foregroundColor: Colors.white,
+                        minimumSize: Size(double.infinity, screenHeight * 0.06),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: screenHeight * 0.04),
+            // Scan Field Section
+            Container(
+              padding: EdgeInsets.all(screenWidth * 0.04),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.2),
+                    spreadRadius: 2,
+                    blurRadius: 5,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.camera_alt, color: AppColors.primaryGreen, size: 24),
+                      SizedBox(width: 8),
+                      Text(
+                        'Scan Field for Accurate Results',
+                        style: GoogleFonts.poppins(
+                          fontSize: screenWidth * 0.045,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Initiate a field scan to detect crop health issues with high accuracy',
+                    style: GoogleFonts.poppins(
+                      fontSize: screenWidth * 0.04,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _scanField,
+                      icon: Icon(Icons.camera_alt, size: 20),
+                      label: Text(
+                        'Start Field Scan',
                         style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
                       ),
                       style: ElevatedButton.styleFrom(

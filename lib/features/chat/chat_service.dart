@@ -9,33 +9,50 @@ class ChatService {
     if (geminiApiKey.isEmpty) {
       return _fallback(prompt);
     }
+
     try {
-      final uri = Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/$_model:generateContent?key='+geminiApiKey);
+      final uri = Uri.parse(
+          'https://generativelanguage.googleapis.com/v1beta/models/$_model:generateContent?key=' + geminiApiKey);
+
       final body = {
         'contents': [
           {
             'parts': [
               {
-                'text': 'You are an assistant for a precision agriculture app (AgroStick). Be concise and helpful.\nUser: '+prompt
+                'text':
+                    'You are an expert assistant for a precision agriculture app called AgroStick, specialized in sustainable farming practices in Punjab, India. Your goal is to provide farmers with concise, helpful, and practical advice related to:\n'
+                    '- Farm mapping and boundary marking\n'
+                    '- Disease detection in crops\n'
+                    '- Spray guidance based on weather conditions\n'
+                    '- Pesticide usage optimization and safety\n'
+                    '- Weather-based farming advisories\n\n'
+                    'Always respond in simple language understandable by farmers. Avoid technical jargon unless necessary. Provide actionable advice.\n\n'
+                    'User: ' +
+                        prompt
               }
             ]
           }
         ]
       };
+
       final res = await http.post(
         uri,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(body),
       );
+
       if (res.statusCode != 200) {
         return _fallback(prompt);
       }
+
       final data = jsonDecode(res.body) as Map<String, dynamic>;
       final candidates = data['candidates'] as List?;
       if (candidates == null || candidates.isEmpty) return _fallback(prompt);
+
       final content = candidates.first['content'];
       final parts = content['parts'] as List?;
       if (parts == null || parts.isEmpty) return _fallback(prompt);
+
       final text = parts.first['text'] as String?;
       return (text == null || text.isEmpty) ? _fallback(prompt) : text.trim();
     } catch (_) {
@@ -57,5 +74,3 @@ class ChatService {
     return 'I can help with farm mapping, disease detection, spray guidance, and weather-based advisories. What would you like to know?';
   }
 }
-
-

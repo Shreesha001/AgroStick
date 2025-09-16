@@ -28,6 +28,9 @@ class _HomeScreenState extends State<HomeScreen> {
   
   // Blog data
   List<BlogModel> _featuredBlogs = [];
+  
+  // Location instance
+  final loc.Location _location = loc.Location();
 
   @override
   void initState() {
@@ -42,25 +45,31 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadWeather() async {
+    if (!mounted) return; // Check if widget is still mounted before starting
     setState(() {
       _loadingWeather = true;
       _weatherError = null;
     });
     try {
-      final location = loc.Location();
-      bool serviceEnabled = await location.serviceEnabled();
+      bool serviceEnabled = await _location.serviceEnabled();
       if (!serviceEnabled) {
-        serviceEnabled = await location.requestService();
+        serviceEnabled = await _location.requestService();
+        if (!serviceEnabled) {
+          throw Exception('Location service disabled');
+        }
       }
-      loc.PermissionStatus permissionGranted = await location.hasPermission();
+      loc.PermissionStatus permissionGranted = await _location.hasPermission();
       if (permissionGranted == loc.PermissionStatus.denied) {
-        permissionGranted = await location.requestPermission();
+        permissionGranted = await _location.requestPermission();
+        if (permissionGranted != loc.PermissionStatus.granted && permissionGranted != loc.PermissionStatus.grantedLimited) {
+          throw Exception('Location permission denied');
+        }
       }
 
       double lat = 12.9716; // fallback: Bengaluru
       double lng = 77.5946;
       if (permissionGranted == loc.PermissionStatus.granted || permissionGranted == loc.PermissionStatus.grantedLimited) {
-        final current = await location.getLocation();
+        final current = await _location.getLocation();
         if (current.latitude != null && current.longitude != null) {
           lat = current.latitude!;
           lng = current.longitude!;
@@ -68,18 +77,30 @@ class _HomeScreenState extends State<HomeScreen> {
       }
 
       final data = await WeatherService.fetch7DayForecast(latitude: lat, longitude: lng);
-      setState(() {
-        _forecast = data;
-      });
+      if (mounted) { // Check if widget is still mounted before updating state
+        setState(() {
+          _forecast = data;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _weatherError = 'Weather unavailable';
-      });
+      if (mounted) { // Check if widget is still mounted before updating state
+        setState(() {
+          _weatherError = 'Weather unavailable';
+        });
+      }
     } finally {
-      setState(() {
-        _loadingWeather = false;
-      });
+      if (mounted) { // Check if widget is still mounted before updating state
+        setState(() {
+          _loadingWeather = false;
+        });
+      }
     }
+  }
+
+  @override
+  void dispose() {
+    // No need to cancel location updates explicitly unless using a stream subscription
+    super.dispose();
   }
 
   Widget _buildWeeklyWeather(double screenWidth) {
@@ -136,7 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
             itemBuilder: (context, index) {
               final day = _forecast[index];
               final emoji = WeatherService.codeToEmoji(day.weatherCode);
-              final weekday = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][day.date.weekday % 7];
+              final weekday = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][day.date.weekday % 7];
               final willRain = (day.precipitationMm ?? 0) > 0;
               return Container(
                 width: 84,

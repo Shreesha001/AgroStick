@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
+import 'package:google_fonts/google_fonts.dart'; 
 import 'chat_service.dart';
 
 class ChatSheet extends StatefulWidget {
@@ -17,7 +18,10 @@ class _ChatSheetState extends State<ChatSheet> {
   @override
   void initState() {
     super.initState();
-    _messages.add(_Msg(text: 'Hi! I\'m your AgroStick assistant. Ask me about mapping, weather, or spraying.', isUser: false));
+    _messages.add(_Msg(
+      text: 'Hi! I\'m your AgroStick assistant. Ask me about mapping, weather, or spraying.',
+      isUser: false,
+    ));
   }
 
   Future<void> _send() async {
@@ -56,7 +60,11 @@ class _ChatSheetState extends State<ChatSheet> {
                   children: [
                     const Icon(Icons.agriculture, color: Colors.green),
                     const SizedBox(width: 8),
-                    Text('AgroStick Assistant', style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 16)),
+                    Text(
+                      'AgroStick Assistant',
+                      style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600, fontSize: 16),
+                    ),
                     const Spacer(),
                     IconButton(
                       icon: const Icon(Icons.close),
@@ -72,18 +80,37 @@ class _ChatSheetState extends State<ChatSheet> {
                   itemBuilder: (context, index) {
                     final m = _messages[index];
                     return Align(
-                      alignment: m.isUser ? Alignment.centerRight : Alignment.centerLeft,
+                      alignment: m.isUser
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
                       child: Container(
                         margin: const EdgeInsets.symmetric(vertical: 6),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
                         decoration: BoxDecoration(
-                          color: m.isUser ? Colors.green : Colors.grey[200],
+                          color:
+                              m.isUser ? Colors.green : Colors.grey[200],
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Text(
-                          m.text,
-                          style: GoogleFonts.poppins(color: m.isUser ? Colors.white : Colors.black87),
-                        ),
+                        child: m.isUser
+                            ? Text(
+                                m.text,
+                                style: GoogleFonts.poppins(
+                                    color: Colors.white),
+                              )
+                            : MarkdownBody(
+                                data: m.text,
+                                styleSheet: MarkdownStyleSheet(
+                                  p: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    color: Colors.black87,
+                                  ),
+                                  strong: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
                       ),
                     );
                   },
@@ -98,7 +125,8 @@ class _ChatSheetState extends State<ChatSheet> {
                       child: TextField(
                         controller: _controller,
                         decoration: const InputDecoration(
-                          hintText: 'Ask about weather, spraying, or mapping…',
+                          hintText:
+                              'Ask about weather, spraying, or mapping…',
                           border: OutlineInputBorder(),
                           isDense: true,
                         ),
@@ -109,7 +137,14 @@ class _ChatSheetState extends State<ChatSheet> {
                     const SizedBox(width: 8),
                     ElevatedButton(
                       onPressed: _sending ? null : _send,
-                      child: _sending ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.send, size: 18),
+                      child: _sending
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child:
+                                  CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.send, size: 18),
                     )
                   ],
                 ),
@@ -127,5 +162,3 @@ class _Msg {
   final bool isUser;
   _Msg({required this.text, required this.isUser});
 }
-
-

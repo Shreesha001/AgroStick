@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:agro_stick/theme/colors.dart';
 import 'package:agro_stick/features/blog/models/blog_model.dart';
@@ -58,16 +59,6 @@ class _BlogContentScreenState extends State<BlogContentScreen> {
             pinned: true,
             backgroundColor: AppColors.primaryGreen,
             flexibleSpace: FlexibleSpaceBar(
-              title: _showAppBar
-                  ? Text(
-                      widget.blog.title,
-                      style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: Colors.white,
-                      ),
-                    )
-                  : null,
               background: Stack(
                 fit: StackFit.expand,
                 children: [
@@ -351,89 +342,44 @@ class _BlogContentScreenState extends State<BlogContentScreen> {
   }
 
   Widget _buildContent(String content) {
-    // Simple content parsing - in a real app, you might want to use a markdown parser
-    final paragraphs = content.split('\n\n');
-    
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: paragraphs.map((paragraph) {
-        if (paragraph.trim().isEmpty) return const SizedBox(height: 16);
-        
-        // Check if it's a heading (starts with ##)
-        if (paragraph.startsWith('##')) {
-          return Padding(
-            padding: const EdgeInsets.only(top: 24, bottom: 12),
-            child: Text(
-              paragraph.substring(2).trim(),
-              style: GoogleFonts.poppins(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.primaryGreen,
-              ),
-            ),
-          );
-        }
-        
-        // Check if it's a subheading (starts with ###)
-        if (paragraph.startsWith('###')) {
-          return Padding(
-            padding: const EdgeInsets.only(top: 20, bottom: 8),
-            child: Text(
-              paragraph.substring(3).trim(),
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-          );
-        }
-        
-        // Check if it's a list item (starts with - or number)
-        if (paragraph.startsWith('-') || paragraph.startsWith(RegExp(r'^\d+\.'))) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '• ',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    color: AppColors.primaryGreen,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Expanded(
-                  child: Text(
-                    paragraph.replaceFirst(RegExp(r'^[-•]\s*|\d+\.\s*'), '').trim(),
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      color: Colors.black87,
-                      height: 1.6,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
-        
-        // Regular paragraph
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: Text(
-            paragraph.trim(),
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              color: Colors.black87,
-              height: 1.6,
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 16),
+    child: MarkdownBody(
+      data: content,
+      styleSheet: MarkdownStyleSheet(
+        p: GoogleFonts.poppins(
+          fontSize: 16,
+          color: Colors.black87,
+          height: 1.6,
+        ),
+        h1: GoogleFonts.poppins(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          color: AppColors.primaryGreen,
+        ),
+        h2: GoogleFonts.poppins(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          color: AppColors.primaryGreen,
+        ),
+        h3: GoogleFonts.poppins(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: Colors.black87,
+        ),
+        strong: TextStyle(
+          fontWeight: FontWeight.bold,
+          color: Colors.black87,
+        ),
+        listBullet: TextStyle(
+          fontSize: 16,
+          color: AppColors.primaryGreen,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    ),
+  );
+}
 
   String _formatDate(DateTime date) {
     final months = [
