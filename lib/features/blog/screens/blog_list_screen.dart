@@ -309,3 +309,4 @@ class _BlogListScreenState extends State<BlogListScreen> {
     }
   }
 }
+

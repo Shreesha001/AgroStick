@@ -6,6 +6,8 @@ import 'package:agro_stick/features/blog/models/blog_model.dart';
 import 'package:agro_stick/features/blog/services/blog_service.dart';
 import 'package:agro_stick/features/blog/screens/blog_list_screen.dart';
 import 'package:agro_stick/features/blog/screens/blog_content_screen.dart';
+import 'package:agro_stick/features/weather/weather_service.dart';
+import 'package:location/location.dart' as loc;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,6 +22,9 @@ class _HomeScreenState extends State<HomeScreen> {
   String _batteryLevel = '80%';
   String _sprayStatus = 'Idle';
   String _temperature = '28°C';
+  List<DailyForecast> _forecast = [];
+  bool _loadingWeather = false;
+  String? _weatherError;
   
   // Blog data
   List<BlogModel> _featuredBlogs = [];
@@ -28,11 +33,162 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadFeaturedBlogs();
+    _loadWeather();
   }
 
   void _loadFeaturedBlogs() {
     final allBlogs = BlogService.getBlogs();
     _featuredBlogs = allBlogs; // Show all blogs as featured
+  }
+
+  Future<void> _loadWeather() async {
+    setState(() {
+      _loadingWeather = true;
+      _weatherError = null;
+    });
+    try {
+      final location = loc.Location();
+      bool serviceEnabled = await location.serviceEnabled();
+      if (!serviceEnabled) {
+        serviceEnabled = await location.requestService();
+      }
+      loc.PermissionStatus permissionGranted = await location.hasPermission();
+      if (permissionGranted == loc.PermissionStatus.denied) {
+        permissionGranted = await location.requestPermission();
+      }
+
+      double lat = 12.9716; // fallback: Bengaluru
+      double lng = 77.5946;
+      if (permissionGranted == loc.PermissionStatus.granted || permissionGranted == loc.PermissionStatus.grantedLimited) {
+        final current = await location.getLocation();
+        if (current.latitude != null && current.longitude != null) {
+          lat = current.latitude!;
+          lng = current.longitude!;
+        }
+      }
+
+      final data = await WeatherService.fetch7DayForecast(latitude: lat, longitude: lng);
+      setState(() {
+        _forecast = data;
+      });
+    } catch (e) {
+      setState(() {
+        _weatherError = 'Weather unavailable';
+      });
+    } finally {
+      setState(() {
+        _loadingWeather = false;
+      });
+    }
+  }
+
+  Widget _buildWeeklyWeather(double screenWidth) {
+    if (_loadingWeather) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          children: [
+            const SizedBox(width: 4),
+            const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'Fetching 7-day weather…',
+              style: GoogleFonts.poppins(fontSize: screenWidth * 0.035, color: Colors.grey[700]),
+            ),
+          ],
+        ),
+      );
+    }
+    if (_weatherError != null) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Text(
+          _weatherError!,
+          style: GoogleFonts.poppins(color: Colors.red, fontSize: screenWidth * 0.04),
+        ),
+      );
+    }
+    if (_forecast.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Weekly Weather',
+          style: GoogleFonts.poppins(
+            fontSize: screenWidth * 0.05,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Container(
+          height: 150,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.1),
+                spreadRadius: 1,
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            itemCount: _forecast.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            itemBuilder: (context, index) {
+              final day = _forecast[index];
+              final emoji = WeatherService.codeToEmoji(day.weatherCode);
+              final weekday = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][day.date.weekday % 7];
+              final willRain = (day.precipitationMm ?? 0) > 0;
+              return Container(
+                width: 90,
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.grey.withOpacity(0.2)),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(weekday, style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 6),
+                    Text(emoji, style: const TextStyle(fontSize: 22)),
+                    const SizedBox(height: 6),
+                    Text(
+                      '${day.maxTempC?.toStringAsFixed(0) ?? '-'}° / ${day.minTempC?.toStringAsFixed(0) ?? '-'}°',
+                      style: GoogleFonts.poppins(fontSize: 12, color: Colors.black87),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(willRain ? Icons.umbrella : Icons.water_drop, size: 14, color: willRain ? Colors.blue : Colors.grey),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${(day.precipitationMm ?? 0).toStringAsFixed(0)}mm',
+                          style: GoogleFonts.poppins(fontSize: 11, color: Colors.grey[700]),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
   }
 
   Widget dataCard(String title, String value, Color color, IconData icon, double screenWidth) {
@@ -287,6 +443,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               SizedBox(height: screenHeight * 0.03),
+              _buildWeeklyWeather(screenWidth),
+              SizedBox(height: screenHeight * 0.03),
               // Sensor Data Grid (2 per row)
               Wrap(
                 spacing: 10,
@@ -362,7 +520,7 @@ class _HomeScreenState extends State<HomeScreen> {
               
               // Horizontal Blog Cards
               SizedBox(
-                height: 280, // Fixed height for horizontal scrolling
+                height: 320, // Increased to avoid overflow
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.only(left: 16),
