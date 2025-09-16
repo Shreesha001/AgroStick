@@ -127,7 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         const SizedBox(height: 10),
         Container(
-          height: 150,
+          height: 140,
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
@@ -451,7 +451,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 runSpacing: 15,
                 children: [
                   dataCard(
-                    'ESP32-S3 Connection',
+                    'ESP32-S3 Status',
                     _isDeviceConnected ? 'Connected' : 'Disconnected',
                     _isDeviceConnected ? Colors.green : Colors.red,
                     Icons.wifi,
