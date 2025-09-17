@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:agro_stick/theme/colors.dart';
 import 'package:agro_stick/features/map/farm_boundary/farm_boundary_screen.dart';
+import 'package:image_picker/image_picker.dart'; // Added for image picking
+import 'dart:io';
 
 class CropHealthScreen extends StatefulWidget {
   const CropHealthScreen({super.key});
@@ -19,6 +21,9 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
     {"name": "Leaf Rust", "severity": "Low"},
     {"name": "Brown Spot", "severity": "Medium"},
   ];
+
+  // Image picker instance
+  final ImagePicker _picker = ImagePicker();
 
   Widget dataCard(String title, String value, Color color, IconData icon, double screenWidth) {
     return Container(
@@ -93,9 +98,64 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
     );
   }
 
+  // Updated _scanField to show dialog with camera and gallery options
   void _scanField() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Initiating field scan...')),
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            'Select Image Source',
+            style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: Icon(Icons.camera_alt, color: AppColors.primaryGreen),
+                title: Text(
+                  'Camera',
+                  style: GoogleFonts.poppins(),
+                ),
+                onTap: () async {
+                  Navigator.of(context).pop();
+                  final XFile? image = await _picker.pickImage(source: ImageSource.camera);
+                  if (image != null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Image selected from camera: ${image.path}')),
+                    );
+                  }
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.photo_library, color: AppColors.primaryGreen),
+                title: Text(
+                  'Gallery',
+                  style: GoogleFonts.poppins(),
+                ),
+                onTap: () async {
+                  Navigator.of(context).pop();
+                  final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+                  if (image != null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Image selected from gallery: ${image.path}')),
+                    );
+                  }
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'Cancel',
+                style: GoogleFonts.poppins(color: Colors.grey),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -506,7 +566,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                       onPressed: _scanField,
                       icon: Icon(Icons.camera_alt, size: 20),
                       label: Text(
-                        'Start Field Scan',
+                        'Field Scan', // Changed from "Start Field Scan"
                         style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
                       ),
                       style: ElevatedButton.styleFrom(
