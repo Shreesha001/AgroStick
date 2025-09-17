@@ -57,17 +57,10 @@ class MyApp extends StatelessWidget {
                           });
                         }
                       },
-                      child: Container(
-                        width: 60,
-                        height: 60,
-                        decoration: const BoxDecoration(
-                          color: Colors.blue,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 2)),
-                          ],
-                        ),
-                        child: const Icon(Icons.smart_toy_outlined, color: Colors.white, size: 30, ),
+                      child: CircleAvatar(
+                        radius: 30,
+                        backgroundColor: Colors.black,
+                        backgroundImage: AssetImage('assets/chatbot_img.png'), // replace with your image path
                       ),
                     ),
                   ),

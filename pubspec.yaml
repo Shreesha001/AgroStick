@@ -76,6 +76,7 @@ flutter:
     - assets/logo.png
     - assets/google_logo.png
     - assets/crop_image.jpg
+    - assets/chatbot_img.png
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
