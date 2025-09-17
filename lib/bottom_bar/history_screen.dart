@@ -108,7 +108,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         backgroundColor: AppColors.primaryGreen,
         title: Text(
           'Spray History',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: Colors.white),
         ),
       ),
       body: SafeArea(

@@ -90,7 +90,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         backgroundColor: AppColors.primaryGreen,
         title: Text(
           'Profile',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold , color: Colors.white),
         ),
       ),
       body: _isLoading

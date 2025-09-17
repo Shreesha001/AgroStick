@@ -169,7 +169,8 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
         backgroundColor: AppColors.primaryGreen,
         title: Text(
           'Crop Health',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold , color: Colors.white),
+
         ),
       ),
       body: SingleChildScrollView(
