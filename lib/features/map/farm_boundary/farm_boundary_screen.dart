@@ -315,7 +315,7 @@ class _FarmBoundaryScreenState extends State<FarmBoundaryScreen> {
         backgroundColor: AppColors.primaryGreen,
         title: Text(
           'Farm Boundary Mapping',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         actions: [
           if (_isBoundaryComplete) ...[
