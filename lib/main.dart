@@ -36,7 +36,14 @@ class MyApp extends StatelessWidget {
       locale: locale,
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
-      theme: ThemeData(primarySwatch: Colors.green),
+      theme: ThemeData(
+        primarySwatch: Colors.green,
+        appBarTheme: const AppBarTheme(
+          iconTheme: IconThemeData(color: Colors.white),
+          actionsIconTheme: IconThemeData(color: Colors.white),
+          foregroundColor: Colors.white,
+        ),
+      ),
       builder: (context, child) {
         return ValueListenableBuilder<bool>(
           valueListenable: chatOpenNotifier,
