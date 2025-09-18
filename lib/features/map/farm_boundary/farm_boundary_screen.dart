@@ -22,6 +22,9 @@ class _FarmBoundaryScreenState extends State<FarmBoundaryScreen> {
   final Set<Circle> _diseaseCircles = {};
   final Set<Marker> _markers = {};
   
+  // Toggle mock disease visuals (red markers/circles)
+  final bool _showDiseaseMock = false;
+  
   double _area = 0.0;
   double _perimeter = 0.0;
   bool _isBoundaryComplete = false;
@@ -64,34 +67,36 @@ class _FarmBoundaryScreenState extends State<FarmBoundaryScreen> {
       _diseaseLocations.addAll(mockDiseases);
     }
     
-    // Add disease markers and circles
-    for (int i = 0; i < _diseaseLocations.length; i++) {
-      final disease = _diseaseLocations[i];
-      final position = disease['position'] as LatLng;
-      
-      _markers.add(
-        Marker(
-          markerId: MarkerId('disease_$i'),
-          position: position,
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-          infoWindow: InfoWindow(
-            title: disease['disease'],
-            snippet: 'Severity: ${disease['severity']}',
+    if (_showDiseaseMock) {
+      // Add disease markers and circles
+      for (int i = 0; i < _diseaseLocations.length; i++) {
+        final disease = _diseaseLocations[i];
+        final position = disease['position'] as LatLng;
+        
+        _markers.add(
+          Marker(
+            markerId: MarkerId('disease_$i'),
+            position: position,
+            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+            infoWindow: InfoWindow(
+              title: disease['disease'],
+              snippet: 'Severity: ${disease['severity']}',
+            ),
+            onTap: () => _showDiseaseDetails(disease),
           ),
-          onTap: () => _showDiseaseDetails(disease),
-        ),
-      );
-      
-      _diseaseCircles.add(
-        Circle(
-          circleId: CircleId('disease_circle_$i'),
-          center: position,
-          radius: 8.0, // 8 meters radius
-          fillColor: Colors.red.withOpacity(0.3),
-          strokeColor: Colors.red,
-          strokeWidth: 2,
-        ),
-      );
+        );
+        
+        _diseaseCircles.add(
+          Circle(
+            circleId: CircleId('disease_circle_$i'),
+            center: position,
+            radius: 8.0, // 8 meters radius
+            fillColor: Colors.red.withOpacity(0.3),
+            strokeColor: Colors.red,
+            strokeWidth: 2,
+          ),
+        );
+      }
     }
   }
 
@@ -169,7 +174,29 @@ class _FarmBoundaryScreenState extends State<FarmBoundaryScreen> {
       _zones.clear();
       final zones = ZoneDivisionUtils.divideIntoZones(_boundaryPoints, 3, 3);
       _zones.addAll(zones);
+      _placeZoneCenterMarkers();
     }
+  }
+
+  void _placeZoneCenterMarkers() {
+    // Remove previous zone markers
+    _markers.removeWhere((m) => m.markerId.value.startsWith('zone_'));
+    int i = 0;
+    for (final polygon in _zones) {
+      if (polygon.points.isNotEmpty) {
+        final center = _getCentroid(polygon.points);
+        _markers.add(
+          Marker(
+            markerId: MarkerId('zone_$i'),
+            position: center,
+            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+            infoWindow: const InfoWindow(title: 'Zone Center'),
+          ),
+        );
+        i++;
+      }
+    }
+    setState(() {});
   }
 
   void _toggleZones() {
@@ -202,7 +229,8 @@ class _FarmBoundaryScreenState extends State<FarmBoundaryScreen> {
       _diseaseCircles.clear();
       _markers.removeWhere((marker) => 
         marker.markerId.value == 'agro_stick' || 
-        marker.markerId.value.startsWith('disease_'));
+        marker.markerId.value.startsWith('disease_') ||
+        marker.markerId.value.startsWith('zone_'));
       _area = 0.0;
       _perimeter = 0.0;
       _isBoundaryComplete = false;
@@ -431,7 +459,7 @@ class _FarmBoundaryScreenState extends State<FarmBoundaryScreen> {
             ),
           
           // Disease detection info
-          if (_diseaseLocations.isNotEmpty)
+          if (_showDiseaseMock && _diseaseLocations.isNotEmpty)
             Positioned(
               top: 20,
               right: 20,
