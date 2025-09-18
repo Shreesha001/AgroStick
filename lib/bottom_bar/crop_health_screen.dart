@@ -149,7 +149,8 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
       final label = (_classLabels != null && maxIdx >= 0 && maxIdx < _classLabels!.length)
           ? _classLabels![maxIdx]
           : 'class #$maxIdx';
-      _scanResult = 'Prediction: $label  (score: ${maxVal.toStringAsFixed(3)})';
+      // Only keep the prediction label; hide score
+      _scanResult = label;
       if (mounted) setState(() {});
     } catch (e) {
       _scanResult = 'Inference failed: $e';
@@ -445,26 +446,35 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                     ),
                   if (_lastImage != null || _scanResult != null) ...[
                     const SizedBox(height: 12),
-                    if (_lastImage != null)
-                      ClipRRect(
+                  if (_lastImage != null)
+                    Center(
+                      child: ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        child: Image.file(File(_lastImage!.path), height: 160, fit: BoxFit.cover),
-                      ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.green.withOpacity(0.3)),
-                      ),
-                      child: Text(
-                        _scanResult ?? '', 
-                        style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.w600,
-                          color: Colors.green[800],
+                        child: Image.file(
+                          File(_lastImage!.path),
+                          height: 200,
+                          fit: BoxFit.cover,
                         ),
-                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  if (_scanResult != null)
+                    Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.green.withOpacity(0.3)),
+                        ),
+                        child: Text(
+                          _scanResult!,
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w600,
+                            color: Colors.green[800],
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     ),
                   ],
