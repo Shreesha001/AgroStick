@@ -17,7 +17,7 @@ class CropHealthScreen extends StatefulWidget {
 
 class _CropHealthScreenState extends State<CropHealthScreen> {
   // Placeholder data
-  String cropStatus = "Healthy";
+  String cropStatus = "Unhealthy";
   String _humidity = '65%';
   String _soilMoisture = 'Optimal';
   List<Map<String, dynamic>> diseaseAlerts = [
@@ -616,10 +616,10 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                   ),
                   SizedBox(height: 10),
                   LinearProgressIndicator(
-                    value: 0.3,
+                    value: 0.83,
                     backgroundColor: Colors.grey[300],
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      Colors.orange.withOpacity(0.7),
+                      Colors.red.withOpacity(0.8),
                     ),
                   ),
                   SizedBox(height: 8),
@@ -634,11 +634,11 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                         ),
                       ),
                       Text(
-                        '30%',
+                        '83%',
                         style: GoogleFonts.poppins(
                           fontSize: screenWidth * 0.035,
                           fontWeight: FontWeight.bold,
-                          color: Colors.orange,
+                          color: Colors.red,
                         ),
                       ),
                       Text(
@@ -746,7 +746,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                       SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'Apply low dosage pesticide spray (20% recommended)',
+                          'Apply high-dosage targeted pesticide immediately',
                           style: GoogleFonts.poppins(
                             fontSize: screenWidth * 0.04,
                             fontWeight: FontWeight.w500,
@@ -763,10 +763,27 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                       SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'Schedule next inspection in 3 days',
+                          'Inspect and monitor daily for spread; re-scan in 24 hours',
                           style: GoogleFonts.poppins(
                             fontSize: screenWidth * 0.04,
                             color: Colors.orange,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.warning_amber, color: Colors.red, size: 20),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Remove heavily affected leaves; isolate diseased plants to limit spread',
+                          style: GoogleFonts.poppins(
+                            fontSize: screenWidth * 0.04,
+                            color: Colors.red[700],
                           ),
                         ),
                       ),
