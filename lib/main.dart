@@ -91,26 +91,11 @@ class MyApp extends StatelessWidget {
           },
         );
       },
-      home: const AuthWrapper(),
+      home: const SplashScreen(),
         );
       },
     );
   }
 }
 
-class AuthWrapper extends StatelessWidget {
-  const AuthWrapper({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-
-    if (user != null) {
-      // User is already signed in → Go to Home
-      return const MainHomeScreen();
-    } else {
-      // No user → Go to Splash Screen (which then leads to Login)
-      return const SplashScreen();
-    }
-  }
-}
+// AuthWrapper no longer used; SplashScreen handles routing after showing splash

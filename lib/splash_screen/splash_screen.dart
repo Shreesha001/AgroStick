@@ -1,4 +1,6 @@
 import 'package:agro_stick/auth_screens/login_screen.dart';
+import 'package:agro_stick/main_home_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -21,9 +23,10 @@ class _SplashScreenState extends State<SplashScreen> {
     });
     // Navigate to the next screen after 3 seconds
     Future.delayed(const Duration(seconds: 3), () {
+      final user = FirebaseAuth.instance.currentUser;
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
+        MaterialPageRoute(builder: (context) => user != null ? const MainHomeScreen() : const LoginScreen()),
       );
     });
   }
