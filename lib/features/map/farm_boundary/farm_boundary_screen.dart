@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'zone_division_utils.dart';
 import 'package:location/location.dart' as loc;
+import 'dart:math' as math;
 
 class FarmBoundaryScreen extends StatefulWidget {
   const FarmBoundaryScreen({super.key});
@@ -187,8 +188,62 @@ class _FarmBoundaryScreenState extends State<FarmBoundaryScreen> {
         
         // Reload disease data with new center
         _loadDiseaseData();
+
+        // Add exactly 3 random red markers inside the selected farm
+        _addRandomDiseaseMarkers(3);
       }
     }
+  }
+
+  void _addRandomDiseaseMarkers(int count) {
+    // Remove any previous disease markers/circles
+    _markers.removeWhere((m) => m.markerId.value.startsWith('disease_'));
+    _diseaseCircles.clear();
+
+    if (_boundaryPoints.length <= 3) {
+      setState(() {});
+      return;
+    }
+
+    // Bounding box for sampling
+    double minLat = _boundaryPoints.first.latitude;
+    double maxLat = _boundaryPoints.first.latitude;
+    double minLng = _boundaryPoints.first.longitude;
+    double maxLng = _boundaryPoints.first.longitude;
+    for (final p in _boundaryPoints) {
+      if (p.latitude < minLat) minLat = p.latitude;
+      if (p.latitude > maxLat) maxLat = p.latitude;
+      if (p.longitude < minLng) minLng = p.longitude;
+      if (p.longitude > maxLng) maxLng = p.longitude;
+    }
+
+    final rng = math.Random();
+    int placed = 0;
+    int attempts = 0;
+    final polygon = _boundaryPoints
+        .map((e) => mp.LatLng(e.latitude, e.longitude))
+        .toList();
+
+    while (placed < count && attempts < 1000) {
+      attempts++;
+      final lat = minLat + rng.nextDouble() * (maxLat - minLat);
+      final lng = minLng + rng.nextDouble() * (maxLng - minLng);
+      final candidate = mp.LatLng(lat, lng);
+
+      final inside = mp.PolygonUtil.containsLocation(candidate, polygon, true);
+      if (!inside) continue;
+
+      final marker = Marker(
+        markerId: MarkerId('disease_$placed'),
+        position: LatLng(lat, lng),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+        infoWindow: const InfoWindow(title: 'Detected Issue'),
+      );
+      _markers.add(marker);
+      placed++;
+    }
+
+    setState(() {});
   }
 
   LatLng _getCentroid(List<LatLng> points) {
