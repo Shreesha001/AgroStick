@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart'; // Added for image picking
 import 'dart:io';
 import 'package:tflite_flutter/tflite_flutter.dart' as tfl;
 import 'package:image/image.dart' as img;
+import 'dart:convert';
 
 class CropHealthScreen extends StatefulWidget {
   const CropHealthScreen({super.key});
@@ -32,6 +33,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
   bool _modelLoading = false;
   String? _scanResult;
   XFile? _lastImage;
+  List<String>? _classLabels;
 
   @override
   void initState() {
@@ -43,6 +45,34 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
     setState(() { _modelLoading = true; });
     try {
       _interpreter = await tfl.Interpreter.fromAsset('lib/model/plant_disease_model.tflite');
+      // Load class labels (supports multiple JSON formats)
+      final jsonStr = await DefaultAssetBundle.of(context).loadString('lib/features/blog/models/classes.json');
+      final dynamic decoded = json.decode(jsonStr);
+      if (decoded is List) {
+        _classLabels = decoded.map((e) => e.toString()).toList();
+      } else if (decoded is Map<String, dynamic>) {
+        if (decoded.containsKey('classes') && decoded['classes'] is List) {
+          _classLabels = (decoded['classes'] as List).map((e) => e.toString()).toList();
+        } else {
+          // If the map is {"Label": index, ...}, sort by value (index) and take keys as labels
+          final entries = decoded.entries.toList();
+          final allValuesAreNums = entries.every((e) => e.value is num);
+          if (allValuesAreNums) {
+            entries.sort((a, b) => (a.value as num).compareTo(b.value as num));
+            _classLabels = entries.map((e) => e.key.toString()).toList();
+          } else {
+            // Fallback: if map is {"0":"Label", ...}, sort by numeric key and take values
+            entries.sort((a, b) {
+              int pa = int.tryParse(a.key) ?? 0;
+              int pb = int.tryParse(b.key) ?? 0;
+              return pa.compareTo(pb);
+            });
+            _classLabels = entries.map((e) => e.value.toString()).toList();
+          }
+        }
+      } else {
+        _classLabels = null; // fallback
+      }
     } catch (e) {
       _scanResult = 'Failed to load model: $e';
     } finally {
@@ -116,7 +146,10 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
       }
 
       _lastImage = imageFile;
-      _scanResult = 'Prediction: class #$maxIdx  (score: ${maxVal.toStringAsFixed(3)})';
+      final label = (_classLabels != null && maxIdx >= 0 && maxIdx < _classLabels!.length)
+          ? _classLabels![maxIdx]
+          : 'class #$maxIdx';
+      _scanResult = 'Prediction: $label  (score: ${maxVal.toStringAsFixed(3)})';
       if (mounted) setState(() {});
     } catch (e) {
       _scanResult = 'Inference failed: $e';
