@@ -1,0 +1,15 @@
+{
+  "@@locale": "hi",
+  "appTitle": "एग्रोस्टिक ऐप",
+  "profile": "प्रोफाइल",
+  "personalInformation": "व्यक्तिगत जानकारी",
+  "name": "नाम",
+  "phone": "फ़ोन",
+  "farmName": "खेत का नाम",
+  "language": "भाषा",
+  "saveProfile": "प्रोफाइल सहेजें",
+  "logout": "लॉगआउट",
+  "profileUpdated": "प्रोफाइल सफलतापूर्वक अपडेट की गई",
+  "profileUpdateError": "प्रोफाइल अपडेट करने में त्रुटि: {error}"
+}
+

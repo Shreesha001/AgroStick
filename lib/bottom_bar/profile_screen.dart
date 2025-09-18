@@ -1,8 +1,10 @@
+import 'package:agro_stick/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:agro_stick/theme/colors.dart';
+import 'package:agro_stick/l10n/locale_notifier.dart'; 
 import 'package:agro_stick/auth_screens/login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -45,6 +47,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _selectedLanguage = doc.exists ? (doc.data()?['language'] ?? 'English') : 'English';
       _isLoading = false;
     });
+
+    // Apply saved language to app locale
+    appLocaleNotifier.value = localeFromDisplayName(_selectedLanguage);
   }
 
   Future<void> _updateProfile() async {
@@ -60,12 +65,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile updated successfully')),
+        SnackBar(content: Text(AppLocalizations.of(context)?.profileUpdated ?? 'Profile updated successfully')),
       );
     } catch (e) {
       if (!mounted) return;
+      final t = AppLocalizations.of(context);
+      final msg = t?.profileUpdateError('$e') ?? 'Error updating profile: $e';
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error updating profile: $e')),
+        SnackBar(content: Text(msg)),
       );
     }
   }
@@ -89,7 +96,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.primaryGreen,
         title: Text(
-          'Profile',
+          AppLocalizations.of(context)?.profile ?? 'Profile',
           style: GoogleFonts.poppins(fontWeight: FontWeight.bold , color: Colors.white),
         ),
       ),
@@ -111,7 +118,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Text(
-                            'Personal Information',
+                            AppLocalizations.of(context)?.personalInformation ?? 'Personal Information',
                             style: GoogleFonts.poppins(
                               fontSize: screenWidth * 0.05,
                               fontWeight: FontWeight.bold,
@@ -119,12 +126,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                           ),
                           const SizedBox(height: 15),
-                          _buildTextField('Name', _nameController),
-                          _buildTextField('Phone', _phoneController, keyboardType: TextInputType.phone), 
-                          _buildTextField('Farm Name', _farmNameController),
+                          _buildTextField(AppLocalizations.of(context)?.name ?? 'Name', _nameController),
+                          _buildTextField(AppLocalizations.of(context)?.phone ?? 'Phone', _phoneController, keyboardType: TextInputType.phone), 
+                          _buildTextField(AppLocalizations.of(context)?.farmName ?? 'Farm Name', _farmNameController),
                           const SizedBox(height: 15),
                           Text(
-                            'Language',
+                            AppLocalizations.of(context)?.language ?? 'Language',
                             style: GoogleFonts.poppins(
                               fontSize: screenWidth * 0.045,
                               fontWeight: FontWeight.w500,
@@ -145,6 +152,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 setState(() {
                                   _selectedLanguage = val;
                                 });
+                                appLocaleNotifier.value = localeFromDisplayName(val);
                               }
                             },
                           ),
@@ -163,7 +171,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                     child: Text(
-                      'Save Profile',
+                      AppLocalizations.of(context)?.saveProfile ?? 'Save Profile',
                       style: GoogleFonts.poppins(
                         fontSize: screenWidth * 0.045,
                         fontWeight: FontWeight.bold,
@@ -182,7 +190,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                     child: Text(
-                      'Logout',
+                      AppLocalizations.of(context)?.logout ?? 'Logout',
                       style: GoogleFonts.poppins(
                         fontSize: screenWidth * 0.045,
                         fontWeight: FontWeight.bold,

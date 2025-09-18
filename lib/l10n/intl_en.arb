@@ -1,0 +1,15 @@
+{
+  "@@locale": "en",
+  "appTitle": "Agrostick App",
+  "profile": "Profile",
+  "personalInformation": "Personal Information",
+  "name": "Name",
+  "phone": "Phone",
+  "farmName": "Farm Name",
+  "language": "Language",
+  "saveProfile": "Save Profile",
+  "logout": "Logout",
+  "profileUpdated": "Profile updated successfully",
+  "profileUpdateError": "Error updating profile: {error}"
+}
+

@@ -1,9 +1,12 @@
+import 'package:agro_stick/l10n/app_localizations.dart';
 import 'package:agro_stick/splash_screen/splash_screen.dart';
 import 'package:agro_stick/main_home_screen.dart';
 import 'package:agro_stick/auth_screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'l10n/locale_notifier.dart'; 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'features/chat/chat_sheet.dart';
 
@@ -22,10 +25,16 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return ValueListenableBuilder<Locale?>(
+      valueListenable: appLocaleNotifier,
+      builder: (context, locale, _) {
+        return MaterialApp(
       navigatorKey: appNavigatorKey,
       debugShowCheckedModeBanner: false,
-      title: 'Agrostick App',
+      title: AppLocalizations.of(context)?.appTitle ?? 'Agrostick App',
+      locale: locale,
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
       theme: ThemeData(primarySwatch: Colors.green),
       builder: (context, child) {
         return ValueListenableBuilder<bool>(
@@ -70,6 +79,8 @@ class MyApp extends StatelessWidget {
         );
       },
       home: const AuthWrapper(),
+        );
+      },
     );
   }
 }
