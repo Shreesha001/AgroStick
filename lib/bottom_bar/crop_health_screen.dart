@@ -170,7 +170,6 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
         title: Text(
           'Crop Health',
           style: GoogleFonts.poppins(fontWeight: FontWeight.bold , color: Colors.white),
-
         ),
       ),
       body: SingleChildScrollView(
@@ -178,287 +177,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Crop Status Card
-            Container(
-              padding: EdgeInsets.all(screenWidth * 0.04),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.2),
-                    spreadRadius: 2,
-                    blurRadius: 5,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Crop Status',
-                        style: GoogleFonts.poppins(
-                          fontSize: screenWidth * 0.05,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      SizedBox(height: 5),
-                      Text(
-                        cropStatus,
-                        style: GoogleFonts.poppins(
-                          fontSize: screenWidth * 0.045,
-                          fontWeight: FontWeight.w500,
-                          color: cropStatus == "Healthy"
-                              ? Colors.green
-                              : Colors.red,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Icon(
-                    cropStatus == "Healthy" ? Icons.check_circle : Icons.warning,
-                    color: cropStatus == "Healthy" ? Colors.green : Colors.red,
-                    size: 40,
-                  )
-                ],
-              ),
-            ),
-            SizedBox(height: screenHeight * 0.03),
-            // Sensor Data Grid (2 per row)
-            Wrap(
-              spacing: 10,
-              runSpacing: 15,
-              children: [
-                dataCard('Humidity', _humidity, Colors.blue, Icons.water_drop, screenWidth),
-                dataCard('Soil Condition', _soilMoisture, Colors.brown, Icons.grass, screenWidth),
-              ],
-            ),
-            SizedBox(height: screenHeight * 0.03),
-            // Infection Level Progress Indicator
-            Container(
-              padding: EdgeInsets.all(screenWidth * 0.04),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.2),
-                    spreadRadius: 2,
-                    blurRadius: 5,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Overall Infection Level',
-                    style: GoogleFonts.poppins(
-                      fontSize: screenWidth * 0.045,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey[700],
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  LinearProgressIndicator(
-                    value: 0.3,
-                    backgroundColor: Colors.grey[300],
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      Colors.orange.withOpacity(0.7),
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '0%',
-                        style: GoogleFonts.poppins(
-                          fontSize: screenWidth * 0.035,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      Text(
-                        '30%',
-                        style: GoogleFonts.poppins(
-                          fontSize: screenWidth * 0.035,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.orange,
-                        ),
-                      ),
-                      Text(
-                        '100%',
-                        style: GoogleFonts.poppins(
-                          fontSize: screenWidth * 0.035,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: screenHeight * 0.03),
-            // Disease Alerts
-            Text(
-              'Disease Alerts',
-              style: GoogleFonts.poppins(
-                fontSize: screenWidth * 0.05,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            SizedBox(height: 10),
-            diseaseAlerts.isEmpty
-                ? Text(
-                    'No disease detected.',
-                    style: GoogleFonts.poppins(
-                      fontSize: screenWidth * 0.045,
-                      color: Colors.grey,
-                    ),
-                  )
-                : Column(
-                    children: diseaseAlerts
-                        .map((alert) => Container(
-                              padding: EdgeInsets.all(screenWidth * 0.04),
-                              margin: EdgeInsets.only(bottom: screenHeight * 0.015),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(15),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.2),
-                                    spreadRadius: 2,
-                                    blurRadius: 5,
-                                    offset: const Offset(0, 3),
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          alert["name"],
-                                          style: GoogleFonts.poppins(
-                                            fontSize: screenWidth * 0.045,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                        SizedBox(height: 4),
-                                        Text(
-                                          'Detected on 2 plants',
-                                          style: GoogleFonts.poppins(
-                                            fontSize: screenWidth * 0.035,
-                                            color: Colors.grey[600],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 6),
-                                    decoration: BoxDecoration(
-                                      color: alert["severity"] == "Low"
-                                          ? Colors.green
-                                          : alert["severity"] == "Medium"
-                                              ? Colors.orange
-                                              : Colors.red,
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: Text(
-                                      alert["severity"],
-                                      style: GoogleFonts.poppins(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  )
-                                ],
-                              ),
-                            ))
-                        .toList(),
-                  ),
-            SizedBox(height: screenHeight * 0.03),
-            // Treatment Recommendations
-            Text(
-              'Treatment Recommendations',
-              style: GoogleFonts.poppins(
-                fontSize: screenWidth * 0.05,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            SizedBox(height: 10),
-            Container(
-              padding: EdgeInsets.all(screenWidth * 0.04),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.2),
-                    spreadRadius: 2,
-                    blurRadius: 5,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Based on current infection level:',
-                    style: GoogleFonts.poppins(
-                      fontSize: screenWidth * 0.04,
-                      color: Colors.grey[700],
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Icon(Icons.water_drop, color: AppColors.primaryGreen, size: 20),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Apply low dosage pesticide spray (20% recommended)',
-                          style: GoogleFonts.poppins(
-                            fontSize: screenWidth * 0.04,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.primaryGreen,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Icon(Icons.schedule, color: Colors.orange, size: 20),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Schedule next inspection in 3 days',
-                          style: GoogleFonts.poppins(
-                            fontSize: screenWidth * 0.04,
-                            color: Colors.orange,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: screenHeight * 0.04),
-            // Farm Mapping Section
+            // 1. Farm Mapping Section
             Container(
               padding: EdgeInsets.all(screenWidth * 0.04),
               decoration: BoxDecoration(
@@ -521,7 +240,8 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
               ),
             ),
             SizedBox(height: screenHeight * 0.04),
-            // Scan Field Section
+            
+            // 2. Scan Field Section
             Container(
               padding: EdgeInsets.all(screenWidth * 0.04),
               decoration: BoxDecoration(
@@ -567,7 +287,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                       onPressed: _scanField,
                       icon: Icon(Icons.camera_alt, size: 20),
                       label: Text(
-                        'Field Scan', // Changed from "Start Field Scan"
+                        'Field Scan',
                         style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
                       ),
                       style: ElevatedButton.styleFrom(
@@ -583,8 +303,9 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                 ],
               ),
             ),
-            SizedBox(height: screenHeight * 0.03),
-            // Quick Actions
+            SizedBox(height: screenHeight * 0.04),
+            
+            // 3. Quick Actions
             Text(
               'Quick Actions',
               style: GoogleFonts.poppins(
@@ -664,6 +385,214 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                       fontSize: screenWidth * 0.045,
                       color: Colors.white,
                     ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: screenHeight * 0.04),
+            
+            // 4. Humidity and Soil Condition Cards
+            Text(
+              'Environmental Conditions',
+              style: GoogleFonts.poppins(
+                fontSize: screenWidth * 0.05,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 10),
+            Wrap(
+              spacing: 10,
+              runSpacing: 15,
+              children: [
+                dataCard('Humidity', _humidity, Colors.blue, Icons.water_drop, screenWidth),
+                dataCard('Soil Condition', _soilMoisture, Colors.brown, Icons.grass, screenWidth),
+              ],
+            ),
+            SizedBox(height: screenHeight * 0.03),
+            
+            // 5. Overall Infection Level
+            Container(
+              padding: EdgeInsets.all(screenWidth * 0.04),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.2),
+                    spreadRadius: 2,
+                    blurRadius: 5,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Overall Infection Level',
+                    style: GoogleFonts.poppins(
+                      fontSize: screenWidth * 0.045,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  LinearProgressIndicator(
+                    value: 0.3,
+                    backgroundColor: Colors.grey[300],
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Colors.orange.withOpacity(0.7),
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '0%',
+                        style: GoogleFonts.poppins(
+                          fontSize: screenWidth * 0.035,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      Text(
+                        '30%',
+                        style: GoogleFonts.poppins(
+                          fontSize: screenWidth * 0.035,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.orange,
+                        ),
+                      ),
+                      Text(
+                        '100%',
+                        style: GoogleFonts.poppins(
+                          fontSize: screenWidth * 0.035,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: screenHeight * 0.03),
+            
+            // 6. Crop Status
+            Container(
+              padding: EdgeInsets.all(screenWidth * 0.04),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.2),
+                    spreadRadius: 2,
+                    blurRadius: 5,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Crop Status',
+                        style: GoogleFonts.poppins(
+                          fontSize: screenWidth * 0.05,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(height: 5),
+                      Text(
+                        cropStatus,
+                        style: GoogleFonts.poppins(
+                          fontSize: screenWidth * 0.045,
+                          fontWeight: FontWeight.w500,
+                          color: cropStatus == "Healthy"
+                              ? Colors.green
+                              : Colors.red,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Icon(
+                    cropStatus == "Healthy" ? Icons.check_circle : Icons.warning,
+                    color: cropStatus == "Healthy" ? Colors.green : Colors.red,
+                    size: 40,
+                  )
+                ],
+              ),
+            ),
+            SizedBox(height: screenHeight * 0.03),
+            
+            // 7. Treatment Recommendations
+            Text(
+              'Treatment Recommendations',
+              style: GoogleFonts.poppins(
+                fontSize: screenWidth * 0.05,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 10),
+            Container(
+              padding: EdgeInsets.all(screenWidth * 0.04),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.2),
+                    spreadRadius: 2,
+                    blurRadius: 5,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Based on current infection level:',
+                    style: GoogleFonts.poppins(
+                      fontSize: screenWidth * 0.04,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Icon(Icons.water_drop, color: AppColors.primaryGreen, size: 20),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Apply low dosage pesticide spray (20% recommended)',
+                          style: GoogleFonts.poppins(
+                            fontSize: screenWidth * 0.04,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.primaryGreen,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(Icons.schedule, color: Colors.orange, size: 20),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Schedule next inspection in 3 days',
+                          style: GoogleFonts.poppins(
+                            fontSize: screenWidth * 0.04,
+                            color: Colors.orange,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

@@ -9,6 +9,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'l10n/locale_notifier.dart'; 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'features/chat/chat_sheet.dart';
+import 'ui/chat_visibility.dart';
 
 final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 final ValueNotifier<bool> chatOpenNotifier = ValueNotifier<bool>(false);
@@ -40,40 +41,45 @@ class MyApp extends StatelessWidget {
         return ValueListenableBuilder<bool>(
           valueListenable: chatOpenNotifier,
           builder: (context, isChatOpen, _) {
-            return Stack(
-              children: [
-                if (child != null) child,
-                if (!isChatOpen)
-                  Positioned(
-                    right: 14,
-                    bottom: 86, // just above bottom bar
-                    child: GestureDetector(
-                      onTap: () async {
-                        final ctx = appNavigatorKey.currentContext;
-                        if (ctx != null) {
-                          chatOpenNotifier.value = true;
-                          await showModalBottomSheet(
-                            context: ctx,
-                            useRootNavigator: true,
-                            isScrollControlled: true,
-                            backgroundColor: Colors.white,
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-                            ),
-                            builder: (_) => const ChatSheet(),
-                          ).whenComplete(() {
-                            chatOpenNotifier.value = false;
-                          });
-                        }
-                      },
-                      child: CircleAvatar(
-                        radius: 30,
-                        backgroundColor: Colors.black,
-                        backgroundImage: AssetImage('assets/chatbot_img.png'), // replace with your image path
+            return ValueListenableBuilder<bool>(
+              valueListenable: chatEnabledNotifier,
+              builder: (context, chatEnabled, __) {
+                return Stack(
+                  children: [
+                    if (child != null) child,
+                    if (chatEnabled && !isChatOpen)
+                      Positioned(
+                        right: 14,
+                        bottom: 86, // just above bottom bar
+                        child: GestureDetector(
+                          onTap: () async {
+                            final ctx = appNavigatorKey.currentContext;
+                            if (ctx != null) {
+                              chatOpenNotifier.value = true;
+                              await showModalBottomSheet(
+                                context: ctx,
+                                useRootNavigator: true,
+                                isScrollControlled: true,
+                                backgroundColor: Colors.white,
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                                ),
+                                builder: (_) => const ChatSheet(),
+                              ).whenComplete(() {
+                                chatOpenNotifier.value = false;
+                              });
+                            }
+                          },
+                          child: CircleAvatar(
+                            radius: 30,
+                            backgroundColor: Colors.black,
+                            backgroundImage: AssetImage('assets/chatbot_img.png'), // replace with your image path
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-              ],
+                  ],
+                );
+              },
             );
           },
         );

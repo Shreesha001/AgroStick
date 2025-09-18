@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:agro_stick/theme/colors.dart';
 import 'login_screen.dart';
+import 'package:agro_stick/ui/chat_visibility.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -20,6 +21,14 @@ class _SignupScreenState extends State<SignupScreen> {
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      chatEnabledNotifier.value = false;
+    });
+  }
 
   Future<void> _signup() async {
     if (_formKey.currentState!.validate()) {
@@ -76,6 +85,9 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      chatEnabledNotifier.value = true;
+    });
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();

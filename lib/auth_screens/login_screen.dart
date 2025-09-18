@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:agro_stick/theme/colors.dart'; 
+import 'package:agro_stick/ui/chat_visibility.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -20,6 +21,14 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _isGoogleLoading = false; // Track Google Sign-In loading state
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      chatEnabledNotifier.value = false;
+    });
+  }
 
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
@@ -98,6 +107,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      chatEnabledNotifier.value = true;
+    });
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
