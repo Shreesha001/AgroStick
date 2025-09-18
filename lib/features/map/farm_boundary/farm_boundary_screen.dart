@@ -8,6 +8,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'zone_division_utils.dart';
 import 'package:location/location.dart' as loc;
 import 'dart:math' as math;
+import 'dart:typed_data';
+
 
 class FarmBoundaryScreen extends StatefulWidget {
   const FarmBoundaryScreen({super.key});

@@ -4,6 +4,8 @@ import 'package:agro_stick/theme/colors.dart';
 import 'package:agro_stick/features/map/farm_boundary/farm_boundary_screen.dart';
 import 'package:image_picker/image_picker.dart'; // Added for image picking
 import 'dart:io';
+import 'package:tflite_flutter/tflite_flutter.dart' as tfl;
+import 'package:image/image.dart' as img;
 
 class CropHealthScreen extends StatefulWidget {
   const CropHealthScreen({super.key});
@@ -24,6 +26,103 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
 
   // Image picker instance
   final ImagePicker _picker = ImagePicker();
+
+  // ML
+  tfl.Interpreter? _interpreter;
+  bool _modelLoading = false;
+  String? _scanResult;
+  XFile? _lastImage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadModel();
+  }
+
+  Future<void> _loadModel() async {
+    setState(() { _modelLoading = true; });
+    try {
+      _interpreter = await tfl.Interpreter.fromAsset('lib/model/plant_disease_model.tflite');
+    } catch (e) {
+      _scanResult = 'Failed to load model: $e';
+    } finally {
+      if (mounted) setState(() { _modelLoading = false; });
+    }
+  }
+
+  Future<void> _runInferenceOnImage(XFile imageFile) async {
+    if (_interpreter == null) {
+      _scanResult = 'Model not loaded';
+      if (mounted) setState(() {});
+      return;
+    }
+
+    try {
+      final bytes = await File(imageFile.path).readAsBytes();
+      img.Image? decoded = img.decodeImage(bytes);
+      if (decoded == null) {
+        _scanResult = 'Could not decode image';
+        if (mounted) setState(() {});
+        return;
+      }
+
+      final inputTensor = _interpreter!.getInputTensors().first;
+      final outputTensor = _interpreter!.getOutputTensors().first;
+      final inputShape = inputTensor.shape; // [1,h,w,c]
+      final h = inputShape.length >= 2 ? inputShape[1] : 224;
+      final w = inputShape.length >= 3 ? inputShape[2] : 224;
+      final c = inputShape.length >= 4 ? inputShape[3] : 3;
+
+      // Resize and normalize
+      final resized = img.copyResize(decoded, width: w, height: h);
+
+      final inputType = inputTensor.type;
+      dynamic input;
+      
+      // Fixed: Use correct TfLiteType enum values for tflite_flutter
+      if (inputType == tfl.TfLiteType.kTfLiteFloat32) {
+        input = List.generate(1, (_) => List.generate(h, (y) => List.generate(w, (x) {
+              final px = resized.getPixel(x, y);
+              final r = px.r / 255.0;
+              final g = px.g / 255.0;
+              final b = px.b / 255.0;
+              return c == 1 ? [0.299*r + 0.587*g + 0.114*b] : [r, g, b];
+            })));
+      } else {
+        // uint8
+        input = List.generate(1, (_) => List.generate(h, (y) => List.generate(w, (x) {
+              final px = resized.getPixel(x, y);
+              final r = px.r;
+              final g = px.g;
+              final b = px.b;
+              return c == 1 ? [((0.299*r + 0.587*g + 0.114*b)).round()] : [r, g, b];
+            })));
+      }
+
+      // Prepare output buffer
+      final outShape = outputTensor.shape; // [1, numClasses] or similar
+      int numOut = 1;
+      for (final d in outShape.skip(1)) { numOut *= d; }
+      List<List<double>> output = List.generate(1, (_) => List.filled(numOut, 0.0));
+
+      _interpreter!.run(input, output);
+
+      // Argmax
+      double maxVal = -1e9;
+      int maxIdx = -1;
+      for (int i = 0; i < numOut; i++) {
+        final v = output[0][i];
+        if (v > maxVal) { maxVal = v; maxIdx = i; }
+      }
+
+      _lastImage = imageFile;
+      _scanResult = 'Prediction: class #$maxIdx  (score: ${maxVal.toStringAsFixed(3)})';
+      if (mounted) setState(() {});
+    } catch (e) {
+      _scanResult = 'Inference failed: $e';
+      if (mounted) setState(() {});
+    }
+  }
 
   Widget dataCard(String title, String value, Color color, IconData icon, double screenWidth) {
     return Container(
@@ -121,9 +220,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                   Navigator.of(context).pop();
                   final XFile? image = await _picker.pickImage(source: ImageSource.camera);
                   if (image != null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Image selected from camera: ${image.path}')),
-                    );
+                    await _runInferenceOnImage(image);
                   }
                 },
               ),
@@ -137,9 +234,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                   Navigator.of(context).pop();
                   final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
                   if (image != null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Image selected from gallery: ${image.path}')),
-                    );
+                    await _runInferenceOnImage(image);
                   }
                 },
               ),
@@ -300,6 +395,46 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                       ),
                     ),
                   ),
+                  if (_modelLoading)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Row(
+                        children: [
+                          const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                          const SizedBox(width: 8),
+                          Text('Loading model...', style: GoogleFonts.poppins(color: Colors.grey[700])),
+                        ],
+                      ),
+                    ),
+                  if (_lastImage != null || _scanResult != null) ...[
+                    const SizedBox(height: 12),
+                    if (_lastImage != null)
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.file(File(_lastImage!.path), height: 160, fit: BoxFit.cover),
+                      ),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.green.withOpacity(0.3)),
+                      ),
+                      child: Text(
+                        _scanResult ?? '', 
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
+                          color: Colors.green[800],
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
