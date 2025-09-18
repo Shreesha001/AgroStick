@@ -6,6 +6,7 @@ import 'package:maps_toolkit/maps_toolkit.dart' as mp;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'zone_division_utils.dart';
+import 'package:location/location.dart' as loc;
 
 class FarmBoundaryScreen extends StatefulWidget {
   const FarmBoundaryScreen({super.key});
@@ -16,11 +17,14 @@ class FarmBoundaryScreen extends StatefulWidget {
 
 class _FarmBoundaryScreenState extends State<FarmBoundaryScreen> {
   late GoogleMapController mapController;
+  bool _mapReady = false;
   final List<LatLng> _boundaryPoints = [];
   final Set<Polygon> _polygons = {};
   final Set<Polygon> _zones = {};
   final Set<Circle> _diseaseCircles = {};
   final Set<Marker> _markers = {};
+  final loc.Location _location = loc.Location();
+  LatLng? _currentLatLng;
   
   // Toggle mock disease visuals (red markers/circles)
   final bool _showDiseaseMock = false;
@@ -53,6 +57,42 @@ class _FarmBoundaryScreenState extends State<FarmBoundaryScreen> {
   void initState() {
     super.initState();
     _loadDiseaseData();
+    _initUserLocation();
+  }
+
+  Future<void> _initUserLocation() async {
+    try {
+      bool serviceEnabled = await _location.serviceEnabled();
+      if (!serviceEnabled) {
+        serviceEnabled = await _location.requestService();
+        if (!serviceEnabled) return;
+      }
+
+      loc.PermissionStatus permissionGranted = await _location.hasPermission();
+      if (permissionGranted == loc.PermissionStatus.denied) {
+        permissionGranted = await _location.requestPermission();
+        if (permissionGranted != loc.PermissionStatus.granted &&
+            permissionGranted != loc.PermissionStatus.grantedLimited) {
+          return;
+        }
+      }
+
+      final current = await _location.getLocation();
+      if (current.latitude != null && current.longitude != null) {
+        _currentLatLng = LatLng(current.latitude!, current.longitude!);
+        if (_mapReady) {
+          // Move camera to current location
+          await mapController.animateCamera(
+            CameraUpdate.newCameraPosition(
+              CameraPosition(target: _currentLatLng!, zoom: 17),
+            ),
+          );
+        }
+      }
+    } catch (_) {
+      // Ignore errors; map will use default position
+    }
+    if (mounted) setState(() {});
   }
 
   void _loadDiseaseData() {
@@ -369,12 +409,22 @@ class _FarmBoundaryScreenState extends State<FarmBoundaryScreen> {
             ),
             onMapCreated: (GoogleMapController controller) {
               mapController = controller;
+              _mapReady = true;
+              if (_currentLatLng != null) {
+                mapController.moveCamera(
+                  CameraUpdate.newCameraPosition(
+                    CameraPosition(target: _currentLatLng!, zoom: 17),
+                  ),
+                );
+              }
             },
             polygons: _showZones ? {..._polygons, ..._zones} : _polygons,
             circles: _diseaseCircles,
             markers: _markers,
             onTap: _onMapTapped,
             mapType: MapType.satellite,
+            myLocationEnabled: true,
+            myLocationButtonEnabled: true,
           ),
           
           // Instructions overlay
