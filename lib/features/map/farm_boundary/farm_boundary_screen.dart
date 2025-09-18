@@ -96,6 +96,9 @@ class _FarmBoundaryScreenState extends State<FarmBoundaryScreen> {
   }
 
   void _loadDiseaseData() {
+    // Always clear any existing disease visuals first
+    _markers.removeWhere((m) => m.markerId.value.startsWith('disease_'));
+    _diseaseCircles.clear();
     // Generate mock disease data if AgroStick center is available
     if (_agroStickCenter != null) {
       final mockDiseases = ZoneDivisionUtils.generateMockDiseaseData(
@@ -177,20 +180,8 @@ class _FarmBoundaryScreenState extends State<FarmBoundaryScreen> {
       // Set AgroStick center as centroid
       _agroStickCenter = _getCentroid(_boundaryPoints);
       
-      // Add AgroStick marker
+      // Center computed; generate zones and place zone center markers
       if (_agroStickCenter != null) {
-        _markers.add(
-          Marker(
-            markerId: const MarkerId('agro_stick'),
-            position: _agroStickCenter!,
-            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-            infoWindow: const InfoWindow(
-              title: 'AgroStick Center',
-              snippet: 'Reference point for disease detection',
-            ),
-          ),
-        );
-        
         // Generate zones
         _generateZones();
         
