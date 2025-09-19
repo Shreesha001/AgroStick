@@ -10,12 +10,14 @@ import 'l10n/locale_notifier.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'features/chat/chat_sheet.dart';
 import 'ui/chat_visibility.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 final ValueNotifier<bool> chatOpenNotifier = ValueNotifier<bool>(false);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(const MyApp());

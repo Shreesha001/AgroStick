@@ -746,7 +746,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                       SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'Apply high-dosage targeted pesticide immediately',
+                          'Apply high-dosage targeted pesticide ',
                           style: GoogleFonts.poppins(
                             fontSize: screenWidth * 0.04,
                             fontWeight: FontWeight.w500,

@@ -1,4 +1,6 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 // WARNING: Do not commit real secrets in production. Use env/remote config.
-const String geminiApiKey = 'AIzaSyC2atvcWulNQZxdzw3UFOv8NZ-40c9v0tE';
+String get geminiApiKey => dotenv.env['GEMINI_API_KEY'] ?? '';
 
 
