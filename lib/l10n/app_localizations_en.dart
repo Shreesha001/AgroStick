@@ -271,4 +271,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String applyPesticideFormat(Object pesticide, Object dosage, Object frequency) {
     return 'Apply $pesticide at $dosage, $frequency.';
   }
+
+  @override
+  String get detected => 'Detected';
 }

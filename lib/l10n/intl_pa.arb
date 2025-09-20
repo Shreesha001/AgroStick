@@ -75,5 +75,50 @@
   "removeAffectedLeaves": "ਭਾਰੀ ਪ੍ਰਭਾਵਿਤ ਪੱਤੇ ਹਟਾਓ; ਬੀਮਾਰ ਪੌਦਿਆਂ ਨੂੰ ਵੱਖ ਕਰੋ",
   "startingPesticideSpray": "ਕੀਟਨਾਸ਼ਕ ਸਪਰੇ ਸ਼ੁਰੂ ਹੋ ਰਿਹਾ ਹੈ...",
   "stoppingPesticideSpray": "ਕੀਟਨਾਸ਼ਕ ਸਪਰੇ ਰੁਕ ਰਿਹਾ ਹੈ...",
-  "openingSpraySchedule": "ਸਪਰੇ ਸ਼ਿਡਿਊਲ ਖੋਲ੍ਹ ਰਹੇ ਹਾਂ..."
+  "openingSpraySchedule": "ਸਪਰੇ ਸ਼ਿਡਿਊਲ ਖੋਲ੍ਹ ਰਹੇ ਹਾਂ...",
+  "rateLimitedMessage": "ਰੇਟ ਸੀਮਿਤ। ਕਿਰਪਾ ਕਰਕੇ {seconds} ਸਕਿੰਟ ਰੁਕੋ...",
+  "@rateLimitedMessage": {
+    "placeholders": {
+      "seconds": {}
+    }
+  },
+  "analyzingMessage": "ਵਿਸ਼ਲੇਸ਼ਣ ਕਰ ਰਹੇ ਹਾਂ...",
+  "rateLimitedRetryMessage": "ਰੇਟ ਸੀਮਿਤ। {seconds} ਸਕਿੰਟ ਵਿੱਚ ਫਿਰ ਕੋਸ਼ਿਸ਼ ਕਰ ਰਹੇ ਹਾਂ... ({attempt}/{maxRetries})",
+  "@rateLimitedRetryMessage": {
+    "placeholders": {
+      "seconds": {},
+      "attempt": {},
+      "maxRetries": {}
+    }
+  },
+  "analysisCompleteMessage": "ਵਿਸ਼ਲੇਸ਼ਣ ਪੂਰਾ: {disease}",
+  "@analysisCompleteMessage": {
+    "placeholders": {
+      "disease": {}
+    }
+  },
+  "analysisFailedMessage": "ਵਿਸ਼ਲੇਸ਼ਣ ਅਸਫਲ: {error}",
+  "@analysisFailedMessage": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "unknownDiseaseDetected": "ਅਗਿਆਤ ਬਿਮਾਰੀ ਦਾ ਪਤਾ ਲੱਗਾ",
+  "couldNotParseAIResponse": "AI ਜਵਾਬ ਨੂੰ ਪਾਰਸ ਕਰਨ ਵਿੱਚ ਅਸਫਲ",
+  "notAnalyzed": "ਵਿਸ਼ਲੇਸ਼ਣ ਨਹੀਂ ਕੀਤਾ",
+  "lowSeverity": "ਘੱਟ",
+  "mediumSeverity": "ਮੱਧਮ",
+  "highSeverity": "ਉੱਚਾ",
+  "applyPesticideFormat": "{pesticide} ਨੂੰ {dosage} 'ਤੇ, {frequency}।",
+  "@applyPesticideFormat": {
+    "placeholders": {
+      "pesticide": {},
+      "dosage": {},
+      "frequency": {}
+    }
+  }
+  "detected": "ਪਤਾ ਲੱਗਾ",
+  "@detected": {
+    "description": "Label for detected disease in scan results"
+  } 
 }

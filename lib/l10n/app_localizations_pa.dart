@@ -271,4 +271,7 @@ class AppLocalizationsPa extends AppLocalizations {
   String applyPesticideFormat(Object pesticide, Object dosage, Object frequency) {
     return '$pesticide ਨੂੰ $dosage \'ਤੇ, $frequency।';
   }
+
+  @override
+  String get detected => 'ਪਤਾ ਲੱਗਾ';
 }

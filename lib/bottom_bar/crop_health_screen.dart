@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:agro_stick/theme/colors.dart';
 import 'package:agro_stick/features/map/farm_boundary/farm_boundary_screen.dart';
+import 'package:agro_stick/l10n/app_localizations.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'dart:convert';
@@ -62,7 +63,8 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
   }
 
   // Rate limiting helper
-  Future<bool> _checkRateLimit() async {
+  Future<bool> _checkRateLimit(BuildContext context) async {
+    final t = AppLocalizations.of(context)!;
     if (_lastRequestTime == null) {
       _lastRequestTime = DateTime.now();
       return true;
@@ -77,7 +79,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Rate limited. Please wait ${waitTime.inSeconds} seconds...'),
+            content: Text(t.rateLimitedMessage(waitTime.inSeconds)),
             duration: waitTime,
           ),
         );
@@ -95,7 +97,8 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
     return true;
   }
 
-  Widget dataCard(String title, String value, Color color, IconData icon, double screenWidth) {
+  Widget dataCard(
+      String title, String value, Color color, IconData icon, double screenWidth, AppLocalizations t) {
     return Container(
       width: (screenWidth - 60) / 2,
       padding: EdgeInsets.all(screenWidth * 0.04),
@@ -137,25 +140,28 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
     );
   }
 
-  void _startSpray() {
+  void _startSpray(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     setState(() {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Starting pesticide spray...')),
+        SnackBar(content: Text(t.startingPesticideSpray)),
       );
     });
   }
 
-  void _stopSpray() {
+  void _stopSpray(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     setState(() {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Stopping pesticide spray...')),
+        SnackBar(content: Text(t.stoppingPesticideSpray)),
       );
     });
   }
 
-  void _scheduleSpray() {
+  void _scheduleSpray(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Opening spray schedule...')),
+      SnackBar(content: Text(t.openingSpraySchedule)),
     );
   }
 
@@ -168,7 +174,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
     );
   }
 
-  Future<Map<String, dynamic>?> _makeApiRequest(String base64Image, {int retryCount = 0}) async {
+  Future<Map<String, dynamic>?> _makeApiRequest(String base64Image, String language, {int retryCount = 0}) async {
     try {
       String prompt = """
 You are an expert plant pathologist and agricultural advisor.
@@ -194,11 +200,34 @@ Respond in JSON format like:
 }
 """;
 
-      // Add language context if needed
-      if (_selectedLanguage != 'en') {
+      // Add language context for Gemini response translation
+      if (language != 'en') {
+        final languageMap = {
+          'hi': 'Hindi',
+          'pa': 'Punjabi',
+        };
+        final targetLanguage = languageMap[language] ?? 'English';
+        
         prompt = """
-Translate your response to ${_selectedLanguage.toUpperCase()} language after the JSON.
-First provide JSON analysis, then translate the disease name and recommendations.
+First, provide the analysis in English JSON format as specified.
+Then, translate the disease name, pesticide name, dosage, frequency, and precautions to $targetLanguage.
+
+Respond with:
+1. JSON analysis (in English)
+2. TRANSLATED_RESPONSE: [translated disease name and recommendations in $targetLanguage]
+
+Example:
+{
+  "infection_level": 3,
+  "disease_name": "Early Blight",
+  "pesticide": {
+    "name": "Mancozeb",
+    "dosage": "2.5 kg/ha",
+    "frequency": "Every 10 days",
+    "precautions": "Wear gloves and mask"
+  }
+}
+TRANSLATED_RESPONSE: बीमारी - प्रारंभिक झुलसा; दवा - मैनकोजेब; खुराक - 2.5 किलो/हेक्टेयर; आवृत्ति - हर 10 दिन; सावधानियां - दस्ताने और मास्क पहनें
 
 $prompt
 """;
@@ -244,11 +273,31 @@ $prompt
             if (jsonString != null) {
               final result = jsonDecode(jsonString);
               
-              // If language translation is needed, extract it
-              if (_selectedLanguage != 'en') {
-                final translatedMatch = RegExp(r'Translation:?\s*(.*)', dotAll: true).firstMatch(content);
+              // Extract translated response if available
+              String? translatedResponse;
+              if (language != 'en') {
+                final translatedMatch = RegExp(r'TRANSLATED_RESPONSE:\s*(.*)', dotAll: true).firstMatch(content);
                 if (translatedMatch != null) {
-                  result['translated_response'] = translatedMatch.group(1)?.trim();
+                  translatedResponse = translatedMatch.group(1)?.trim();
+                }
+                
+                // Parse translated fields if available
+                if (translatedResponse != null) {
+                  try {
+                    // Simple parsing - you might need more sophisticated parsing based on your response format
+                    final lines = translatedResponse.split(';');
+                    for (String line in lines) {
+                      line = line.trim();
+                      if (line.toLowerCase().contains('बीमारी') || line.toLowerCase().contains('disease')) {
+                        result['translated_disease'] = line.split('-')[1].trim();
+                      } else if (line.toLowerCase().contains('दवा') || line.toLowerCase().contains('pesticide')) {
+                        result['translated_pesticide'] = line.split('-')[1].trim();
+                      }
+                    }
+                  } catch (e) {
+                    // Fallback to full translated response
+                    result['translated_response'] = translatedResponse;
+                  }
                 }
               }
               
@@ -261,16 +310,8 @@ $prompt
         // Rate limit exceeded - implement exponential backoff
         final backoffDelay = Duration(seconds: (1 << retryCount));
         if (retryCount < _maxRetries) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Rate limited. Retrying in ${backoffDelay.inSeconds} seconds... (${retryCount + 1}/$_maxRetries)'),
-                duration: const Duration(seconds: 2),
-              ),
-            );
-          }
           await Future.delayed(backoffDelay);
-          return _makeApiRequest(base64Image, retryCount: retryCount + 1);
+          return _makeApiRequest(base64Image, language, retryCount: retryCount + 1);
         } else {
           throw Exception('Max retries exceeded due to rate limiting');
         }
@@ -282,9 +323,9 @@ $prompt
     }
   }
 
-  Future<void> _runInferenceOnImage(XFile imageFile) async {
+  Future<void> _runInferenceOnImage(XFile imageFile, AppLocalizations t) async {
     // Check rate limit first
-    final canProceed = await _checkRateLimit();
+    final canProceed = await _checkRateLimit(context);
     if (!canProceed) return;
 
     setState(() {
@@ -300,19 +341,21 @@ $prompt
       // Additional safety delay
       await Future.delayed(const Duration(milliseconds: 500));
 
-      final parsedJson = await _makeApiRequest(base64Image, retryCount: _retryCount);
+      final parsedJson = await _makeApiRequest(base64Image, _selectedLanguage, retryCount: _retryCount);
 
       if (parsedJson != null && mounted) {
         setState(() {
           _infectionLevel = parsedJson['infection_level'];
-          _diseaseName = parsedJson['disease_name'];
-          _pesticideName = parsedJson['pesticide']?['name'];
+          _diseaseName = parsedJson['disease_name'] ?? parsedJson['translated_disease'];
+          _pesticideName = parsedJson['pesticide']?['name'] ?? parsedJson['translated_pesticide'];
           _dosage = parsedJson['pesticide']?['dosage'];
           _frequency = parsedJson['pesticide']?['frequency'];
           _precautions = parsedJson['pesticide']?['precautions'];
 
-          // Use translated response if available
-          _scanResult = parsedJson['translated_response'] ?? (_diseaseName ?? 'Unknown disease detected');
+          // Use translated response if available, otherwise use disease name
+          _scanResult = parsedJson['translated_response'] ?? 
+                       parsedJson['translated_disease'] ?? 
+                       (_diseaseName ?? t.unknownDiseaseDetected);
           _lastImage = imageFile;
 
           // Update crop status only after analysis
@@ -324,32 +367,32 @@ $prompt
           // Update disease alerts
           diseaseAlerts = [
             {
-              "name": _diseaseName ?? "Unknown Disease", 
-              "severity": _levelToSeverity(_infectionLevel ?? 3)
+              "name": _diseaseName ?? t.unknownDiseaseDetected, 
+              "severity": _levelToSeverity(_infectionLevel ?? 3, t)
             },
           ];
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Analysis complete: ${_diseaseName ?? 'Disease detected'}'),
+            content: Text(t.analysisCompleteMessage(_diseaseName ?? t.unknownDiseaseDetected)),
             backgroundColor: Colors.green,
             duration: const Duration(seconds: 3),
           ),
         );
       } else if (mounted) {
         setState(() {
-          _scanResult = 'Could not parse AI response';
+          _scanResult = t.couldNotParseAIResponse;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _scanResult = 'Error: ${e.toString()}';
+          _scanResult = t.analysisFailedMessage(e.toString());
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Analysis failed: ${e.toString()}'),
+            content: Text(t.analysisFailedMessage(e.toString())),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 4),
           ),
@@ -364,13 +407,14 @@ $prompt
     }
   }
 
-  String _levelToSeverity(int level) {
-    if (level <= 2) return "Low";
-    if (level == 3) return "Medium";
-    return "High";
+  String _levelToSeverity(int level, AppLocalizations t) {
+    if (level <= 2) return t.lowSeverity;
+    if (level == 3) return t.mediumSeverity;
+    return t.highSeverity;
   }
 
-  void _scanField() {
+  void _scanField(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     if (_isRateLimited || _isAnalyzing) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -386,7 +430,7 @@ $prompt
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(
-            'Select Image Source',
+            t.selectImageSource,
             style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
           ),
           content: Column(
@@ -395,7 +439,7 @@ $prompt
               ListTile(
                 leading: Icon(Icons.camera_alt, color: AppColors.primaryGreen),
                 title: Text(
-                  'Camera',
+                  t.camera,
                   style: GoogleFonts.poppins(),
                 ),
                 onTap: () async {
@@ -407,14 +451,14 @@ $prompt
                     imageQuality: 80,
                   );
                   if (image != null) {
-                    await _runInferenceOnImage(image);
+                    await _runInferenceOnImage(image, t);
                   }
                 },
               ),
               ListTile(
                 leading: Icon(Icons.photo_library, color: AppColors.primaryGreen),
                 title: Text(
-                  'Gallery',
+                  t.gallery,
                   style: GoogleFonts.poppins(),
                 ),
                 onTap: () async {
@@ -426,7 +470,7 @@ $prompt
                     imageQuality: 80,
                   );
                   if (image != null) {
-                    await _runInferenceOnImage(image);
+                    await _runInferenceOnImage(image, t);
                   }
                 },
               ),
@@ -436,7 +480,7 @@ $prompt
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: Text(
-                'Cancel',
+                t.cancel,
                 style: GoogleFonts.poppins(color: Colors.grey),
               ),
             ),
@@ -446,15 +490,15 @@ $prompt
     );
   }
 
-  String _getStatusText(String statusKey) {
-    if (statusKey.isEmpty) return 'Not Analyzed';
+  String _getStatusText(String statusKey, AppLocalizations t) {
+    if (statusKey.isEmpty) return t.notAnalyzed;
     switch (statusKey) {
       case 'healthy':
-        return 'Healthy';
+        return t.healthy;
       case 'unhealthy':
-        return 'Unhealthy';
+        return t.unhealthy;
       case 'optimal':
-        return 'Optimal';
+        return t.optimal;
       default:
         return statusKey;
     }
@@ -497,17 +541,18 @@ $prompt
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    final cropStatusText = _getStatusText(cropStatus);
-    final soilMoistureText = _getStatusText(_soilMoisture);
+    final cropStatusText = _getStatusText(cropStatus, t);
+    final soilMoistureText = _getStatusText(_soilMoisture, t);
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.primaryGreen,
         title: Text(
-          'Crop Health',
+          t.cropHealth,
           style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: Colors.white),
         ),
       ),
@@ -539,7 +584,7 @@ $prompt
                       Icon(Icons.map, color: AppColors.primaryGreen, size: 24),
                       SizedBox(width: 8),
                       Text(
-                        'Farm Mapping',
+                        t.farmMapping,
                         style: GoogleFonts.poppins(
                           fontSize: screenWidth * 0.045,
                           fontWeight: FontWeight.w600,
@@ -549,7 +594,7 @@ $prompt
                   ),
                   SizedBox(height: 8),
                   Text(
-                    'Map your farm boundaries and track planting areas',
+                    t.farmMappingDescription,
                     style: GoogleFonts.poppins(
                       fontSize: screenWidth * 0.04,
                       color: Colors.grey[600],
@@ -562,7 +607,7 @@ $prompt
                       onPressed: _openFarmMapping,
                       icon: Icon(Icons.map, size: 20),
                       label: Text(
-                        'Open Farm Mapping',
+                        t.openFarmMapping,
                         style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
                       ),
                       style: ElevatedButton.styleFrom(
@@ -603,7 +648,7 @@ $prompt
                       Icon(Icons.camera_alt, color: AppColors.primaryGreen, size: 24),
                       SizedBox(width: 8),
                       Text(
-                        'Scan Field',
+                        t.scanField,
                         style: GoogleFonts.poppins(
                           fontSize: screenWidth * 0.045,
                           fontWeight: FontWeight.w600,
@@ -613,7 +658,7 @@ $prompt
                   ),
                   SizedBox(height: 8),
                   Text(
-                    'Take a photo of your plants to analyze health and detect diseases',
+                    t.scanFieldDescription,
                     style: GoogleFonts.poppins(
                       fontSize: screenWidth * 0.04,
                       color: Colors.grey[600],
@@ -623,7 +668,7 @@ $prompt
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: (_isAnalyzing || _isRateLimited) ? null : () => _scanField(),
+                      onPressed: (_isAnalyzing || _isRateLimited) ? null : () => _scanField(context),
                       icon: _isAnalyzing 
                           ? SizedBox(
                               width: 20,
@@ -636,8 +681,8 @@ $prompt
                           : Icon(Icons.camera_alt, size: 20),
                       label: Text(
                         _isAnalyzing 
-                            ? 'Analyzing...' 
-                            : (_isRateLimited ? 'Rate Limited' : 'Field Scan'),
+                            ? t.analyzingMessage 
+                            : (_isRateLimited ? t.rateLimitedMessage(2) : t.fieldScan),
                         style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
                       ),
                       style: ElevatedButton.styleFrom(
@@ -676,7 +721,7 @@ $prompt
                             border: Border.all(color: Colors.green.withOpacity(0.3)),
                           ),
                           child: Text(
-                            'Detected: $_scanResult!',
+                            '${t.detected}! $_scanResult',
                             style: GoogleFonts.poppins(
                               fontWeight: FontWeight.w600,
                               color: Colors.green[800],
@@ -693,7 +738,7 @@ $prompt
             
             // 3. Quick Actions
             Text(
-              'Quick Actions',
+              t.quickActions,
               style: GoogleFonts.poppins(
                 fontSize: screenWidth * 0.05,
                 fontWeight: FontWeight.w600,
@@ -704,7 +749,7 @@ $prompt
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton(
-                  onPressed: () => _startSpray(),
+                  onPressed: () => _startSpray(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryGreen,
                     minimumSize: Size(screenWidth * 0.42, screenHeight * 0.07),
@@ -716,7 +761,7 @@ $prompt
                       Icon(Icons.play_arrow, size: 20, color: Colors.white),
                       SizedBox(width: 4),
                       Text(
-                        'Start Spray',
+                        t.startSpray,
                         style: GoogleFonts.poppins(
                           fontWeight: FontWeight.bold,
                           fontSize: screenWidth * 0.04,
@@ -727,7 +772,7 @@ $prompt
                   ),
                 ),
                 ElevatedButton(
-                  onPressed: () => _stopSpray(),
+                  onPressed: () => _stopSpray(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red,
                     minimumSize: Size(screenWidth * 0.42, screenHeight * 0.07),
@@ -739,7 +784,7 @@ $prompt
                       Icon(Icons.stop, size: 20, color: Colors.white),
                       SizedBox(width: 4),
                       Text(
-                        'Stop Spray',
+                        t.stopSpray,
                         style: GoogleFonts.poppins(
                           fontWeight: FontWeight.bold,
                           fontSize: screenWidth * 0.04,
@@ -753,7 +798,7 @@ $prompt
             ),
             SizedBox(height: screenHeight * 0.03),
             ElevatedButton(
-              onPressed: () => _scheduleSpray(),
+              onPressed: () => _scheduleSpray(context),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange,
                 minimumSize: Size(double.infinity, screenHeight * 0.07),
@@ -765,7 +810,7 @@ $prompt
                   Icon(Icons.schedule, size: 20, color: Colors.white),
                   SizedBox(width: 8),
                   Text(
-                    'Schedule Spray',
+                    t.scheduleSpray,
                     style: GoogleFonts.poppins(
                       fontWeight: FontWeight.bold,
                       fontSize: screenWidth * 0.045,
@@ -779,7 +824,7 @@ $prompt
             
             // 4. Humidity and Soil Condition Cards
             Text(
-              'Environmental Conditions',
+              t.environmentalConditions,
               style: GoogleFonts.poppins(
                 fontSize: screenWidth * 0.05,
                 fontWeight: FontWeight.w600,
@@ -790,8 +835,8 @@ $prompt
               spacing: 10,
               runSpacing: 15,
               children: [
-                dataCard('Humidity', _humidity, Colors.blue, Icons.water_drop, screenWidth),
-                dataCard('Soil Condition', soilMoistureText, Colors.brown, Icons.grass, screenWidth),
+                dataCard(t.humidity, _humidity, Colors.blue, Icons.water_drop, screenWidth, t),
+                dataCard(t.soilCondition, soilMoistureText, Colors.brown, Icons.grass, screenWidth, t),
               ],
             ),
             SizedBox(height: screenHeight * 0.04),
@@ -816,7 +861,7 @@ $prompt
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Overall Infection Level',
+                      t.overallInfectionLevel,
                       style: GoogleFonts.poppins(
                         fontSize: screenWidth * 0.045,
                         fontWeight: FontWeight.w600,
@@ -888,7 +933,7 @@ $prompt
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Crop Status',
+                          t.cropStatus,
                           style: GoogleFonts.poppins(
                             fontSize: screenWidth * 0.05,
                             fontWeight: FontWeight.w600,
@@ -919,7 +964,7 @@ $prompt
             // 7. Treatment Recommendations - Only show after analysis
             if (cropStatus.isNotEmpty) ...[
               Text(
-                'Treatment Recommendations',
+                t.treatmentRecommendations,
                 style: GoogleFonts.poppins(
                   fontSize: screenWidth * 0.05,
                   fontWeight: FontWeight.w600,
@@ -944,7 +989,7 @@ $prompt
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Based on current infection analysis',
+                      t.basedOnCurrentInfection,
                       style: GoogleFonts.poppins(
                         fontSize: screenWidth * 0.04,
                         color: Colors.grey[700],
@@ -958,7 +1003,7 @@ $prompt
                           SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'Apply $_pesticideName at $_dosage, $_frequency.',
+                              t.applyPesticideFormat(_pesticideName!, _dosage!, _frequency!),
                               style: GoogleFonts.poppins(
                                 fontSize: screenWidth * 0.04,
                                 fontWeight: FontWeight.w500,
@@ -991,7 +1036,7 @@ $prompt
                           SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'Scan your field to get personalized treatment recommendations',
+                              t.inspectAndMonitorDaily,
                               style: GoogleFonts.poppins(
                                 fontSize: screenWidth * 0.04,
                                 color: Colors.blue[700],

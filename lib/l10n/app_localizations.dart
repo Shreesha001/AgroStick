@@ -586,6 +586,9 @@ abstract class AppLocalizations {
   /// **'High'**
   String get highSeverity;
 
+  /// No description provided for @detected.
+String get detected;
+
   /// No description provided for @applyPesticideFormat.
   ///
   /// In en, this message translates to:
