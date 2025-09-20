@@ -123,12 +123,106 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String sprayNumber(Object number) {
-    return intl.Intl.message(
-      'Spray #$number',
-      name: 'sprayNumber',
-      args: [number],
-      desc: 'Dynamic spray number like \'Spray #1\'',
-      examples: {'number': 1},
-    );
+    return 'Spray $number';
   }
+
+  @override
+  String get cropHealth => 'Crop Health';
+
+  @override
+  String get farmMapping => 'Farm Mapping';
+
+  @override
+  String get farmMappingDescription =>
+      'Map your farm boundary and detect disease locations with precision';
+
+  @override
+  String get openFarmMapping => 'Open Farm Mapping';
+
+  @override
+  String get scanField => 'Scan Field for Accurate Results';
+
+  @override
+  String get scanFieldDescription =>
+      'Initiate a field scan to detect crop health issues with high accuracy';
+
+  @override
+  String get fieldScan => 'Field Scan';
+
+  @override
+  String get loadingModel => 'Loading model...';
+
+  @override
+  String get selectImageSource => 'Select Image Source';
+
+  @override
+  String get camera => 'Camera';
+
+  @override
+  String get gallery => 'Gallery';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get quickActions => 'Quick Actions';
+
+  @override
+  String get startSpray => 'Start Spray';
+
+  @override
+  String get stopSpray => 'Stop Spray';
+
+  @override
+  String get scheduleSpray => 'Schedule Spray';
+
+  @override
+  String get environmentalConditions => 'Environmental Conditions';
+
+  @override
+  String get humidity => 'Humidity';
+
+  @override
+  String get soilCondition => 'Soil Condition';
+
+  @override
+  String get optimal => 'Optimal';
+
+  @override
+  String get overallInfectionLevel => 'Overall Infection Level';
+
+  @override
+  String get cropStatus => 'Crop Status';
+
+  @override
+  String get healthy => 'Healthy';
+
+  @override
+  String get unhealthy => 'Unhealthy';
+
+  @override
+  String get treatmentRecommendations => 'Treatment Recommendations';
+
+  @override
+  String get basedOnCurrentInfection => 'Based on current infection level:';
+
+  @override
+  String get applyHighDosagePesticide => 'Apply high-dosage targeted pesticide';
+
+  @override
+  String get inspectAndMonitorDaily =>
+      'Inspect and monitor daily for spread; re-scan in 24 hours';
+
+  @override
+  String get removeAffectedLeaves =>
+      'Remove heavily affected leaves; isolate diseased plants to limit spread';
+
+  @override
+  String get startingPesticideSpray => 'Starting pesticide spray...';
+
+  @override
+  String get stoppingPesticideSpray => 'Stopping pesticide spray...';
+
+  @override
+  String get openingSpraySchedule => 'Opening spray schedule...';
 }

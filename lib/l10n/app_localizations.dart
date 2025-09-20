@@ -47,12 +47,12 @@ import 'app_localizations_pa.dart';
 ///
 /// iOS applications define key application metadata, including supported
 /// locales, in an Info.plist file that is built into the application bundle.
-/// To configure the locales supported by your app, you'll need to edit this
+/// To configure the locales supported by your app, you’ll need to edit this
 /// file.
 ///
-/// First, open your project's ios/Runner.xcworkspace Xcode workspace file.
+/// First, open your project’s ios/Runner.xcworkspace Xcode workspace file.
 /// Then, in the Project Navigator, open the Info.plist file under the Runner
-/// project's Runner folder.
+/// project’s Runner folder.
 ///
 /// Next, select the Information Property List item, select Add Item from the
 /// Editor menu, then select Localizations from the pop-up menu.
@@ -322,11 +322,203 @@ abstract class AppLocalizations {
   /// **'L'**
   String get liters;
 
-  /// No description provided for @sprayNumber.
+  /// Dynamic spray number like 'Spray 1'
   ///
   /// In en, this message translates to:
-  /// **'Spray #{}'**
+  /// **'Spray {number}'**
   String sprayNumber(Object number);
+
+  /// No description provided for @cropHealth.
+  ///
+  /// In en, this message translates to:
+  /// **'Crop Health'**
+  String get cropHealth;
+
+  /// No description provided for @farmMapping.
+  ///
+  /// In en, this message translates to:
+  /// **'Farm Mapping'**
+  String get farmMapping;
+
+  /// No description provided for @farmMappingDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Map your farm boundary and detect disease locations with precision'**
+  String get farmMappingDescription;
+
+  /// No description provided for @openFarmMapping.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Farm Mapping'**
+  String get openFarmMapping;
+
+  /// No description provided for @scanField.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan Field for Accurate Results'**
+  String get scanField;
+
+  /// No description provided for @scanFieldDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Initiate a field scan to detect crop health issues with high accuracy'**
+  String get scanFieldDescription;
+
+  /// No description provided for @fieldScan.
+  ///
+  /// In en, this message translates to:
+  /// **'Field Scan'**
+  String get fieldScan;
+
+  /// No description provided for @loadingModel.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading model...'**
+  String get loadingModel;
+
+  /// No description provided for @selectImageSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Image Source'**
+  String get selectImageSource;
+
+  /// No description provided for @camera.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera'**
+  String get camera;
+
+  /// No description provided for @gallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Gallery'**
+  String get gallery;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @quickActions.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Actions'**
+  String get quickActions;
+
+  /// No description provided for @startSpray.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Spray'**
+  String get startSpray;
+
+  /// No description provided for @stopSpray.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop Spray'**
+  String get stopSpray;
+
+  /// No description provided for @scheduleSpray.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule Spray'**
+  String get scheduleSpray;
+
+  /// No description provided for @environmentalConditions.
+  ///
+  /// In en, this message translates to:
+  /// **'Environmental Conditions'**
+  String get environmentalConditions;
+
+  /// No description provided for @humidity.
+  ///
+  /// In en, this message translates to:
+  /// **'Humidity'**
+  String get humidity;
+
+  /// No description provided for @soilCondition.
+  ///
+  /// In en, this message translates to:
+  /// **'Soil Condition'**
+  String get soilCondition;
+
+  /// No description provided for @optimal.
+  ///
+  /// In en, this message translates to:
+  /// **'Optimal'**
+  String get optimal;
+
+  /// No description provided for @overallInfectionLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Overall Infection Level'**
+  String get overallInfectionLevel;
+
+  /// No description provided for @cropStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Crop Status'**
+  String get cropStatus;
+
+  /// No description provided for @healthy.
+  ///
+  /// In en, this message translates to:
+  /// **'Healthy'**
+  String get healthy;
+
+  /// No description provided for @unhealthy.
+  ///
+  /// In en, this message translates to:
+  /// **'Unhealthy'**
+  String get unhealthy;
+
+  /// No description provided for @treatmentRecommendations.
+  ///
+  /// In en, this message translates to:
+  /// **'Treatment Recommendations'**
+  String get treatmentRecommendations;
+
+  /// No description provided for @basedOnCurrentInfection.
+  ///
+  /// In en, this message translates to:
+  /// **'Based on current infection level:'**
+  String get basedOnCurrentInfection;
+
+  /// No description provided for @applyHighDosagePesticide.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply high-dosage targeted pesticide'**
+  String get applyHighDosagePesticide;
+
+  /// No description provided for @inspectAndMonitorDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'Inspect and monitor daily for spread; re-scan in 24 hours'**
+  String get inspectAndMonitorDaily;
+
+  /// No description provided for @removeAffectedLeaves.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove heavily affected leaves; isolate diseased plants to limit spread'**
+  String get removeAffectedLeaves;
+
+  /// No description provided for @startingPesticideSpray.
+  ///
+  /// In en, this message translates to:
+  /// **'Starting pesticide spray...'**
+  String get startingPesticideSpray;
+
+  /// No description provided for @stoppingPesticideSpray.
+  ///
+  /// In en, this message translates to:
+  /// **'Stopping pesticide spray...'**
+  String get stoppingPesticideSpray;
+
+  /// No description provided for @openingSpraySchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening spray schedule...'**
+  String get openingSpraySchedule;
 }
 
 class _AppLocalizationsDelegate

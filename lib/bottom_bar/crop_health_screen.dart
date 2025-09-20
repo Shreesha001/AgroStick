@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:agro_stick/theme/colors.dart';
+import 'package:agro_stick/l10n/app_localizations.dart';
 import 'package:agro_stick/features/map/farm_boundary/farm_boundary_screen.dart';
-import 'package:image_picker/image_picker.dart'; // Added for image picking
+import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:tflite_flutter/tflite_flutter.dart' as tfl;
 import 'package:image/image.dart' as img;
@@ -17,9 +18,9 @@ class CropHealthScreen extends StatefulWidget {
 
 class _CropHealthScreenState extends State<CropHealthScreen> {
   // Placeholder data
-  String cropStatus = "Unhealthy";
+  String cropStatus = "unhealthy"; // Use key instead of hardcoded value
   String _humidity = '65%';
-  String _soilMoisture = 'Optimal';
+  String _soilMoisture = 'optimal'; // Use key instead of hardcoded value
   List<Map<String, dynamic>> diseaseAlerts = [
     {"name": "Leaf Rust", "severity": "Low"},
     {"name": "Brown Spot", "severity": "Medium"},
@@ -109,7 +110,6 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
       final inputType = inputTensor.type;
       dynamic input;
       
-      // Fixed: Use correct TfLiteType enum values for tflite_flutter
       if (inputType == tfl.TfLiteType.kTfLiteFloat32) {
         input = List.generate(1, (_) => List.generate(h, (y) => List.generate(w, (x) {
               final px = resized.getPixel(x, y);
@@ -158,9 +158,9 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
     }
   }
 
-  Widget dataCard(String title, String value, Color color, IconData icon, double screenWidth) {
+  Widget dataCard(String title, String value, Color color, IconData icon, double screenWidth, AppLocalizations t) {
     return Container(
-      width: (screenWidth - 60) / 2, // 2 cards per row with spacing
+      width: (screenWidth - 60) / 2,
       padding: EdgeInsets.all(screenWidth * 0.04),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -200,25 +200,25 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
     );
   }
 
-  void _startSpray() {
+  void _startSpray(AppLocalizations t) {
     setState(() {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Starting pesticide spray...')),
+        SnackBar(content: Text(t.startingPesticideSpray)),
       );
     });
   }
 
-  void _stopSpray() {
+  void _stopSpray(AppLocalizations t) {
     setState(() {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Stopping pesticide spray...')),
+        SnackBar(content: Text(t.stoppingPesticideSpray)),
       );
     });
   }
 
-  void _scheduleSpray() {
+  void _scheduleSpray(AppLocalizations t) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Opening spray schedule...')),
+      SnackBar(content: Text(t.openingSpraySchedule)),
     );
   }
 
@@ -231,14 +231,13 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
     );
   }
 
-  // Updated _scanField to show dialog with camera and gallery options
-  void _scanField() {
+  void _scanField(AppLocalizations t) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(
-            'Select Image Source',
+            t.selectImageSource,
             style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
           ),
           content: Column(
@@ -247,7 +246,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
               ListTile(
                 leading: Icon(Icons.camera_alt, color: AppColors.primaryGreen),
                 title: Text(
-                  'Camera',
+                  t.camera,
                   style: GoogleFonts.poppins(),
                 ),
                 onTap: () async {
@@ -261,7 +260,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
               ListTile(
                 leading: Icon(Icons.photo_library, color: AppColors.primaryGreen),
                 title: Text(
-                  'Gallery',
+                  t.gallery,
                   style: GoogleFonts.poppins(),
                 ),
                 onTap: () async {
@@ -278,7 +277,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: Text(
-                'Cancel',
+                t.cancel,
                 style: GoogleFonts.poppins(color: Colors.grey),
               ),
             ),
@@ -288,17 +287,56 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
     );
   }
 
+  String _getStatusText(String statusKey, AppLocalizations t) {
+    switch (statusKey) {
+      case 'healthy':
+        return t.healthy;
+      case 'unhealthy':
+        return t.unhealthy;
+      case 'optimal':
+        return t.optimal;
+      default:
+        return statusKey;
+    }
+  }
+
+  Color _getStatusColor(String statusKey) {
+    switch (statusKey) {
+      case 'healthy':
+        return Colors.green;
+      case 'unhealthy':
+        return Colors.red;
+      default:
+        return Colors.brown;
+    }
+  }
+
+  IconData _getStatusIcon(String statusKey) {
+    switch (statusKey) {
+      case 'healthy':
+        return Icons.check_circle;
+      case 'unhealthy':
+        return Icons.warning;
+      default:
+        return Icons.grass;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
+
+    final cropStatusText = _getStatusText(cropStatus, t);
+    final soilMoistureText = _getStatusText(_soilMoisture, t);
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.primaryGreen,
         title: Text(
-          'Crop Health',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold , color: Colors.white),
+          t.cropHealth,
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: Colors.white),
         ),
       ),
       body: SingleChildScrollView(
@@ -329,7 +367,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                       Icon(Icons.map, color: AppColors.primaryGreen, size: 24),
                       SizedBox(width: 8),
                       Text(
-                        'Farm Mapping',
+                        t.farmMapping,
                         style: GoogleFonts.poppins(
                           fontSize: screenWidth * 0.045,
                           fontWeight: FontWeight.w600,
@@ -339,7 +377,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                   ),
                   SizedBox(height: 8),
                   Text(
-                    'Map your farm boundary and detect disease locations with precision',
+                    t.farmMappingDescription,
                     style: GoogleFonts.poppins(
                       fontSize: screenWidth * 0.04,
                       color: Colors.grey[600],
@@ -352,7 +390,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                       onPressed: _openFarmMapping,
                       icon: Icon(Icons.map, size: 20),
                       label: Text(
-                        'Open Farm Mapping',
+                        t.openFarmMapping,
                         style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
                       ),
                       style: ElevatedButton.styleFrom(
@@ -393,7 +431,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                       Icon(Icons.camera_alt, color: AppColors.primaryGreen, size: 24),
                       SizedBox(width: 8),
                       Text(
-                        'Scan Field for Accurate Results',
+                        t.scanField,
                         style: GoogleFonts.poppins(
                           fontSize: screenWidth * 0.045,
                           fontWeight: FontWeight.w600,
@@ -403,7 +441,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                   ),
                   SizedBox(height: 8),
                   Text(
-                    'Initiate a field scan to detect crop health issues with high accuracy',
+                    t.scanFieldDescription,
                     style: GoogleFonts.poppins(
                       fontSize: screenWidth * 0.04,
                       color: Colors.grey[600],
@@ -413,10 +451,10 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: _scanField,
+                      onPressed: () => _scanField(t),
                       icon: Icon(Icons.camera_alt, size: 20),
                       label: Text(
-                        'Field Scan',
+                        t.fieldScan,
                         style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
                       ),
                       style: ElevatedButton.styleFrom(
@@ -440,43 +478,43 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           ),
                           const SizedBox(width: 8),
-                          Text('Loading model...', style: GoogleFonts.poppins(color: Colors.grey[700])),
+                          Text(t.loadingModel, style: GoogleFonts.poppins(color: Colors.grey[700])),
                         ],
                       ),
                     ),
                   if (_lastImage != null || _scanResult != null) ...[
                     const SizedBox(height: 12),
-                  if (_lastImage != null)
-                    Center(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.file(
-                          File(_lastImage!.path),
-                          height: 200,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                  if (_scanResult != null)
-                    Center(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: Colors.green.withOpacity(0.1),
+                    if (_lastImage != null)
+                      Center(
+                        child: ClipRRect(
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.green.withOpacity(0.3)),
-                        ),
-                        child: Text(
-                          _scanResult!,
-                          style: GoogleFonts.poppins(
-                            fontWeight: FontWeight.w600,
-                            color: Colors.green[800],
+                          child: Image.file(
+                            File(_lastImage!.path),
+                            height: 200,
+                            fit: BoxFit.cover,
                           ),
-                          textAlign: TextAlign.center,
                         ),
                       ),
-                    ),
+                    const SizedBox(height: 8),
+                    if (_scanResult != null)
+                      Center(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: Colors.green.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.green.withOpacity(0.3)),
+                          ),
+                          child: Text(
+                            _scanResult!,
+                            style: GoogleFonts.poppins(
+                              fontWeight: FontWeight.w600,
+                              color: Colors.green[800],
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
                   ],
                 ],
               ),
@@ -485,7 +523,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
             
             // 3. Quick Actions
             Text(
-              'Quick Actions',
+              t.quickActions,
               style: GoogleFonts.poppins(
                 fontSize: screenWidth * 0.05,
                 fontWeight: FontWeight.w600,
@@ -496,7 +534,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton(
-                  onPressed: _startSpray,
+                  onPressed: () => _startSpray(t),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryGreen,
                     minimumSize: Size(screenWidth * 0.42, screenHeight * 0.07),
@@ -508,7 +546,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                       Icon(Icons.play_arrow, size: 20, color: Colors.white),
                       SizedBox(width: 4),
                       Text(
-                        'Start Spray',
+                        t.startSpray,
                         style: GoogleFonts.poppins(
                           fontWeight: FontWeight.bold,
                           fontSize: screenWidth * 0.04,
@@ -519,7 +557,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                   ),
                 ),
                 ElevatedButton(
-                  onPressed: _stopSpray,
+                  onPressed: () => _stopSpray(t),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red,
                     minimumSize: Size(screenWidth * 0.42, screenHeight * 0.07),
@@ -531,7 +569,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                       Icon(Icons.stop, size: 20, color: Colors.white),
                       SizedBox(width: 4),
                       Text(
-                        'Stop Spray',
+                        t.stopSpray,
                         style: GoogleFonts.poppins(
                           fontWeight: FontWeight.bold,
                           fontSize: screenWidth * 0.04,
@@ -545,7 +583,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
             ),
             SizedBox(height: screenHeight * 0.03),
             ElevatedButton(
-              onPressed: _scheduleSpray,
+              onPressed: () => _scheduleSpray(t),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange,
                 minimumSize: Size(double.infinity, screenHeight * 0.07),
@@ -557,7 +595,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                   Icon(Icons.schedule, size: 20, color: Colors.white),
                   SizedBox(width: 8),
                   Text(
-                    'Schedule Spray',
+                    t.scheduleSpray,
                     style: GoogleFonts.poppins(
                       fontWeight: FontWeight.bold,
                       fontSize: screenWidth * 0.045,
@@ -571,7 +609,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
             
             // 4. Humidity and Soil Condition Cards
             Text(
-              'Environmental Conditions',
+              t.environmentalConditions,
               style: GoogleFonts.poppins(
                 fontSize: screenWidth * 0.05,
                 fontWeight: FontWeight.w600,
@@ -582,8 +620,8 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
               spacing: 10,
               runSpacing: 15,
               children: [
-                dataCard('Humidity', _humidity, Colors.blue, Icons.water_drop, screenWidth),
-                dataCard('Soil Condition', _soilMoisture, Colors.brown, Icons.grass, screenWidth),
+                dataCard(t.humidity, _humidity, Colors.blue, Icons.water_drop, screenWidth, t),
+                dataCard(t.soilCondition, soilMoistureText, Colors.brown, Icons.grass, screenWidth, t),
               ],
             ),
             SizedBox(height: screenHeight * 0.03),
@@ -607,7 +645,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Overall Infection Level',
+                    t.overallInfectionLevel,
                     style: GoogleFonts.poppins(
                       fontSize: screenWidth * 0.045,
                       fontWeight: FontWeight.w600,
@@ -677,7 +715,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Crop Status',
+                        t.cropStatus,
                         style: GoogleFonts.poppins(
                           fontSize: screenWidth * 0.05,
                           fontWeight: FontWeight.w600,
@@ -685,20 +723,18 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                       ),
                       SizedBox(height: 5),
                       Text(
-                        cropStatus,
+                        cropStatusText,
                         style: GoogleFonts.poppins(
                           fontSize: screenWidth * 0.045,
                           fontWeight: FontWeight.w500,
-                          color: cropStatus == "Healthy"
-                              ? Colors.green
-                              : Colors.red,
+                          color: _getStatusColor(cropStatus),
                         ),
                       ),
                     ],
                   ),
                   Icon(
-                    cropStatus == "Healthy" ? Icons.check_circle : Icons.warning,
-                    color: cropStatus == "Healthy" ? Colors.green : Colors.red,
+                    _getStatusIcon(cropStatus),
+                    color: _getStatusColor(cropStatus),
                     size: 40,
                   )
                 ],
@@ -708,7 +744,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
             
             // 7. Treatment Recommendations
             Text(
-              'Treatment Recommendations',
+              t.treatmentRecommendations,
               style: GoogleFonts.poppins(
                 fontSize: screenWidth * 0.05,
                 fontWeight: FontWeight.w600,
@@ -733,7 +769,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Based on current infection level:',
+                    t.basedOnCurrentInfection,
                     style: GoogleFonts.poppins(
                       fontSize: screenWidth * 0.04,
                       color: Colors.grey[700],
@@ -746,7 +782,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                       SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'Apply high-dosage targeted pesticide ',
+                          t.applyHighDosagePesticide,
                           style: GoogleFonts.poppins(
                             fontSize: screenWidth * 0.04,
                             fontWeight: FontWeight.w500,
@@ -763,7 +799,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                       SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'Inspect and monitor daily for spread; re-scan in 24 hours',
+                          t.inspectAndMonitorDaily,
                           style: GoogleFonts.poppins(
                             fontSize: screenWidth * 0.04,
                             color: Colors.orange,
@@ -780,7 +816,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                       SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'Remove heavily affected leaves; isolate diseased plants to limit spread',
+                          t.removeAffectedLeaves,
                           style: GoogleFonts.poppins(
                             fontSize: screenWidth * 0.04,
                             color: Colors.red[700],

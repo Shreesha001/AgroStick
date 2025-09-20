@@ -123,12 +123,107 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String sprayNumber(Object number) {
-    return intl.Intl.message(
-      'स्प्रे #$number',
-      name: 'sprayNumber',
-      args: [number],
-      desc: 'Dynamic spray number like \'स्प्रे #1\'',
-      examples: {'number': 1},
-    );
+    return 'स्प्रे $number';
   }
+
+  @override
+  String get cropHealth => 'फसल स्वास्थ्य';
+
+  @override
+  String get farmMapping => 'खेत मैपिंग';
+
+  @override
+  String get farmMappingDescription =>
+      'अपनी खेत की सीमा मैप करें और बीमारी के स्थान का पता लगाएं';
+
+  @override
+  String get openFarmMapping => 'खेत मैपिंग खोलें';
+
+  @override
+  String get scanField => 'सटीक परिणामों के लिए क्षेत्र स्कैन करें';
+
+  @override
+  String get scanFieldDescription =>
+      'फसल स्वास्थ्य समस्याओं का पता लगाने के लिए क्षेत्र स्कैन शुरू करें';
+
+  @override
+  String get fieldScan => 'क्षेत्र स्कैन';
+
+  @override
+  String get loadingModel => 'मॉडल लोड हो रहा है...';
+
+  @override
+  String get selectImageSource => 'छवि स्रोत चुनें';
+
+  @override
+  String get camera => 'कैमरा';
+
+  @override
+  String get gallery => 'गैलरी';
+
+  @override
+  String get cancel => 'रद्द करें';
+
+  @override
+  String get quickActions => 'त्वरित कार्य';
+
+  @override
+  String get startSpray => 'स्प्रे शुरू करें';
+
+  @override
+  String get stopSpray => 'स्प्रे रोकें';
+
+  @override
+  String get scheduleSpray => 'स्प्रे शेड्यूल करें';
+
+  @override
+  String get environmentalConditions => 'पर्यावरणीय स्थितियां';
+
+  @override
+  String get humidity => 'आर्द्रता';
+
+  @override
+  String get soilCondition => 'मिट्टी की स्थिति';
+
+  @override
+  String get optimal => 'अनुकूल';
+
+  @override
+  String get overallInfectionLevel => 'कुल संक्रमण स्तर';
+
+  @override
+  String get cropStatus => 'फसल स्थिति';
+
+  @override
+  String get healthy => 'स्वस्थ';
+
+  @override
+  String get unhealthy => 'अस्वस्थ';
+
+  @override
+  String get treatmentRecommendations => 'उपचार सिफारिशें';
+
+  @override
+  String get basedOnCurrentInfection => 'वर्तमान संक्रमण स्तर के आधार पर:';
+
+  @override
+  String get applyHighDosagePesticide =>
+      'उच्च-खुराक लक्षित कीटनाशक का छिड़काव करें';
+
+  @override
+  String get inspectAndMonitorDaily =>
+      'फैलाव के लिए रोज़ाना जांच करें; 24 घंटे में पुनः-स्कैन करें';
+
+  @override
+  String get removeAffectedLeaves =>
+      'गंभीर रूप से प्रभावित पत्तियों को हटाएं; बीमार पौधों को अलग करें';
+
+  @override
+  String get startingPesticideSpray => 'कीटनाशक स्प्रे शुरू हो रहा है...';
+
+  @override
+  String get stoppingPesticideSpray => 'कीटनाशक स्प्रे रुक रहा है...';
+
+  @override
+  String get openingSpraySchedule => 'स्प्रे शेड्यूल खोल रहे हैं...';
 }

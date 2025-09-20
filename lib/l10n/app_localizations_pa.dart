@@ -4,7 +4,7 @@ import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
 
-/// The translations for Punjabi (`pa`).
+/// The translations for Panjabi Punjabi (`pa`).
 class AppLocalizationsPa extends AppLocalizations {
   AppLocalizationsPa([String locale = 'pa']) : super(locale);
 
@@ -123,12 +123,106 @@ class AppLocalizationsPa extends AppLocalizations {
 
   @override
   String sprayNumber(Object number) {
-    return intl.Intl.message(
-      'ਸਪਰੇ #$number',
-      name: 'sprayNumber',
-      args: [number],
-      desc: 'Dynamic spray number like \'ਸਪਰੇ #1\'',
-      examples: {'number': 1},
-    );
+    return 'ਸਪਰੇ $number';
   }
+
+  @override
+  String get cropHealth => 'ਫਸਲ ਸਿਹਤ';
+
+  @override
+  String get farmMapping => 'ਖੇਤ ਨਕਸ਼ਾ';
+
+  @override
+  String get farmMappingDescription =>
+      'ਆਪਣੀ ਖੇਤ ਦੀ ਸੀਮਾ ਨੂੰ ਨਕਸ਼ੇ \'ਤੇ ਦਰਜ ਕਰੋ ਅਤੇ ਬੀਮਾਰੀ ਦੇ ਸਥਾਨਾਂ ਦਾ ਪਤਾ ਲਗਾਓ';
+
+  @override
+  String get openFarmMapping => 'ਖੇਤ ਨਕਸ਼ਾ ਖੋਲ੍ਹੋ';
+
+  @override
+  String get scanField => 'ਸਹੀ ਨਤੀਜਿਆਂ ਲਈ ਖੇਤ ਸਕੈਨ ਕਰੋ';
+
+  @override
+  String get scanFieldDescription =>
+      'ਫਸਲ ਸਿਹਤ ਸਮੱਸਿਆਵਾਂ ਦਾ ਪਤਾ ਲਗਾਉਣ ਲਈ ਖੇਤ ਸਕੈਨ ਸ਼ੁਰੂ ਕਰੋ';
+
+  @override
+  String get fieldScan => 'ਖੇਤ ਸਕੈਨ';
+
+  @override
+  String get loadingModel => 'ਮਾਡਲ ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ...';
+
+  @override
+  String get selectImageSource => 'ਚਿੱਤਰ ਸਰੋਤ ਚੁਣੋ';
+
+  @override
+  String get camera => 'ਕੈਮਰਾ';
+
+  @override
+  String get gallery => 'ਗੈਲਰੀ';
+
+  @override
+  String get cancel => 'ਰੱਦ ਕਰੋ';
+
+  @override
+  String get quickActions => 'ਤੇਜ਼ ਕਾਰਵਾਈਆਂ';
+
+  @override
+  String get startSpray => 'ਸਪਰੇ ਸ਼ੁਰੂ ਕਰੋ';
+
+  @override
+  String get stopSpray => 'ਸਪਰੇ ਰੁਕੋ';
+
+  @override
+  String get scheduleSpray => 'ਸਪਰੇ ਸ਼ਿਡਿਊਲ ਕਰੋ';
+
+  @override
+  String get environmentalConditions => 'ਪਰਿਬੇਸ਼ਕ ਸਥਿਤੀਆਂ';
+
+  @override
+  String get humidity => 'ਨਮੀ';
+
+  @override
+  String get soilCondition => 'ਮਿੱਟੀ ਦੀ ਹਾਲਤ';
+
+  @override
+  String get optimal => 'ਵਧੀਆ';
+
+  @override
+  String get overallInfectionLevel => 'ਕੁੱਲ ਸੰਕਰਮਣ ਪੱਧਰ';
+
+  @override
+  String get cropStatus => 'ਫਸਲ ਹਾਲਤ';
+
+  @override
+  String get healthy => 'ਸਿਹਤਮੰਦ';
+
+  @override
+  String get unhealthy => 'ਅਸਿਹਤਮੰਦ';
+
+  @override
+  String get treatmentRecommendations => 'ਇਲਾਜ ਸਿਫਾਰਸ਼ਾਂ';
+
+  @override
+  String get basedOnCurrentInfection => 'ਮੌਜੂਦਾ ਸੰਕਰਮਣ ਪੱਧਰ ਦੇ ਅਧਾਰ \'ਤੇ:';
+
+  @override
+  String get applyHighDosagePesticide => 'ਉੱਚ-ਖੁਰਾਕ ਟਾਰਗੇਟ ਕੀਟਨਾਸ਼ਕ ਲਗਾਓ';
+
+  @override
+  String get inspectAndMonitorDaily =>
+      'ਫੈਲਣ ਲਈ ਰੋਜ਼ਾਨਾ ਜਾਂਚ ਕਰੋ; 24 ਘੰਟਿਆਂ ਵਿੱਚ ਦੁਬਾਰਾ ਸਕੈਨ ਕਰੋ';
+
+  @override
+  String get removeAffectedLeaves =>
+      'ਭਾਰੀ ਪ੍ਰਭਾਵਿਤ ਪੱਤੇ ਹਟਾਓ; ਬੀਮਾਰ ਪੌਦਿਆਂ ਨੂੰ ਵੱਖ ਕਰੋ';
+
+  @override
+  String get startingPesticideSpray => 'ਕੀਟਨਾਸ਼ਕ ਸਪਰੇ ਸ਼ੁਰੂ ਹੋ ਰਿਹਾ ਹੈ...';
+
+  @override
+  String get stoppingPesticideSpray => 'ਕੀਟਨਾਸ਼ਕ ਸਪਰੇ ਰੁਕ ਰਿਹਾ ਹੈ...';
+
+  @override
+  String get openingSpraySchedule => 'ਸਪਰੇ ਸ਼ਿਡਿਊਲ ਖੋਲ੍ਹ ਰਹੇ ਹਾਂ...';
 }

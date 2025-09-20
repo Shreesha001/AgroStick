@@ -26,8 +26,6 @@
   "spraying": "स्प्रे कर रहे हैं",
   "blogs": "ब्लॉग",
   "viewAll": "सभी देखें",
-  
-  // HistoryScreen translations
   "sprayHistory": "स्प्रे इतिहास",
   "today": "आज",
   "thisWeek": "इस सप्ताह",
@@ -39,5 +37,43 @@
   "time": "समय",
   "amount": "मात्रा",
   "liters": "लीटर",
-  "sprayNumber": "स्प्रे #{}"
+  "@sprayNumber": {
+    "description": "Dynamic spray number like 'स्प्रे 1'",
+    "placeholders": {
+      "number": {}
+    }
+  },
+  "sprayNumber": "स्प्रे {number}",
+  "cropHealth": "फसल स्वास्थ्य",
+  "farmMapping": "खेत मैपिंग",
+  "farmMappingDescription": "अपनी खेत की सीमा मैप करें और बीमारी के स्थान का पता लगाएं",
+  "openFarmMapping": "खेत मैपिंग खोलें",
+  "scanField": "सटीक परिणामों के लिए क्षेत्र स्कैन करें",
+  "scanFieldDescription": "फसल स्वास्थ्य समस्याओं का पता लगाने के लिए क्षेत्र स्कैन शुरू करें",
+  "fieldScan": "क्षेत्र स्कैन",
+  "loadingModel": "मॉडल लोड हो रहा है...",
+  "selectImageSource": "छवि स्रोत चुनें",
+  "camera": "कैमरा",
+  "gallery": "गैलरी",
+  "cancel": "रद्द करें",
+  "quickActions": "त्वरित कार्य",
+  "startSpray": "स्प्रे शुरू करें",
+  "stopSpray": "स्प्रे रोकें",
+  "scheduleSpray": "स्प्रे शेड्यूल करें",
+  "environmentalConditions": "पर्यावरणीय स्थितियां",
+  "humidity": "आर्द्रता",
+  "soilCondition": "मिट्टी की स्थिति",
+  "optimal": "अनुकूल",
+  "overallInfectionLevel": "कुल संक्रमण स्तर",
+  "cropStatus": "फसल स्थिति",
+  "healthy": "स्वस्थ",
+  "unhealthy": "अस्वस्थ",
+  "treatmentRecommendations": "उपचार सिफारिशें",
+  "basedOnCurrentInfection": "वर्तमान संक्रमण स्तर के आधार पर:",
+  "applyHighDosagePesticide": "उच्च-खुराक लक्षित कीटनाशक का छिड़काव करें",
+  "inspectAndMonitorDaily": "फैलाव के लिए रोज़ाना जांच करें; 24 घंटे में पुनः-स्कैन करें",
+  "removeAffectedLeaves": "गंभीर रूप से प्रभावित पत्तियों को हटाएं; बीमार पौधों को अलग करें",
+  "startingPesticideSpray": "कीटनाशक स्प्रे शुरू हो रहा है...",
+  "stoppingPesticideSpray": "कीटनाशक स्प्रे रुक रहा है...",
+  "openingSpraySchedule": "स्प्रे शेड्यूल खोल रहे हैं..."
 }

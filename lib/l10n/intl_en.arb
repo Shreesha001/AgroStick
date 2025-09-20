@@ -26,8 +26,6 @@
   "spraying": "Spraying",
   "blogs": "Blogs",
   "viewAll": "View All",
-  
-  // HistoryScreen translations
   "sprayHistory": "Spray History",
   "today": "Today",
   "thisWeek": "This Week",
@@ -39,5 +37,43 @@
   "time": "Time",
   "amount": "Amount",
   "liters": "L",
-  "sprayNumber": "Spray #{}"
+  "@sprayNumber": {
+    "description": "Dynamic spray number like 'Spray 1'",
+    "placeholders": {
+      "number": {}
+    }
+  },
+  "sprayNumber": "Spray {number}",
+  "cropHealth": "Crop Health",
+  "farmMapping": "Farm Mapping",
+  "farmMappingDescription": "Map your farm boundary and detect disease locations with precision",
+  "openFarmMapping": "Open Farm Mapping",
+  "scanField": "Scan Field for Accurate Results",
+  "scanFieldDescription": "Initiate a field scan to detect crop health issues with high accuracy",
+  "fieldScan": "Field Scan",
+  "loadingModel": "Loading model...",
+  "selectImageSource": "Select Image Source",
+  "camera": "Camera",
+  "gallery": "Gallery",
+  "cancel": "Cancel",
+  "quickActions": "Quick Actions",
+  "startSpray": "Start Spray",
+  "stopSpray": "Stop Spray",
+  "scheduleSpray": "Schedule Spray",
+  "environmentalConditions": "Environmental Conditions",
+  "humidity": "Humidity",
+  "soilCondition": "Soil Condition",
+  "optimal": "Optimal",
+  "overallInfectionLevel": "Overall Infection Level",
+  "cropStatus": "Crop Status",
+  "healthy": "Healthy",
+  "unhealthy": "Unhealthy",
+  "treatmentRecommendations": "Treatment Recommendations",
+  "basedOnCurrentInfection": "Based on current infection level:",
+  "applyHighDosagePesticide": "Apply high-dosage targeted pesticide",
+  "inspectAndMonitorDaily": "Inspect and monitor daily for spread; re-scan in 24 hours",
+  "removeAffectedLeaves": "Remove heavily affected leaves; isolate diseased plants to limit spread",
+  "startingPesticideSpray": "Starting pesticide spray...",
+  "stoppingPesticideSpray": "Stopping pesticide spray...",
+  "openingSpraySchedule": "Opening spray schedule..."
 }
