@@ -87,4 +87,48 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get viewAll => 'सभी देखें';
+
+  @override
+  String get sprayHistory => 'स्प्रे इतिहास';
+
+  @override
+  String get today => 'आज';
+
+  @override
+  String get thisWeek => 'इस सप्ताह';
+
+  @override
+  String get thisMonth => 'इस महीने';
+
+  @override
+  String get sprays => 'स्प्रे';
+
+  @override
+  String get sprayDetails => 'स्प्रे विवरण';
+
+  @override
+  String get sprayTrend => 'स्प्रे रुझान';
+
+  @override
+  String get spray => 'स्प्रे';
+
+  @override
+  String get time => 'समय';
+
+  @override
+  String get amount => 'मात्रा';
+
+  @override
+  String get liters => 'लीटर';
+
+  @override
+  String sprayNumber(Object number) {
+    return intl.Intl.message(
+      'स्प्रे #$number',
+      name: 'sprayNumber',
+      args: [number],
+      desc: 'Dynamic spray number like \'स्प्रे #1\'',
+      examples: {'number': 1},
+    );
+  }
 }

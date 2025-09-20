@@ -25,5 +25,19 @@
   "idle": "Idle",
   "spraying": "Spraying",
   "blogs": "Blogs",
-  "viewAll": "View All"
+  "viewAll": "View All",
+  
+  // HistoryScreen translations
+  "sprayHistory": "Spray History",
+  "today": "Today",
+  "thisWeek": "This Week",
+  "thisMonth": "This Month",
+  "sprays": "Sprays",
+  "sprayDetails": "Spray Details",
+  "sprayTrend": "Spray Trend",
+  "spray": "Spray",
+  "time": "Time",
+  "amount": "Amount",
+  "liters": "L",
+  "sprayNumber": "Spray #{}"
 }

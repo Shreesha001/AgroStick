@@ -87,4 +87,48 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get viewAll => 'View All';
+
+  @override
+  String get sprayHistory => 'Spray History';
+
+  @override
+  String get today => 'Today';
+
+  @override
+  String get thisWeek => 'This Week';
+
+  @override
+  String get thisMonth => 'This Month';
+
+  @override
+  String get sprays => 'Sprays';
+
+  @override
+  String get sprayDetails => 'Spray Details';
+
+  @override
+  String get sprayTrend => 'Spray Trend';
+
+  @override
+  String get spray => 'Spray';
+
+  @override
+  String get time => 'Time';
+
+  @override
+  String get amount => 'Amount';
+
+  @override
+  String get liters => 'L';
+
+  @override
+  String sprayNumber(Object number) {
+    return intl.Intl.message(
+      'Spray #$number',
+      name: 'sprayNumber',
+      args: [number],
+      desc: 'Dynamic spray number like \'Spray #1\'',
+      examples: {'number': 1},
+    );
+  }
 }

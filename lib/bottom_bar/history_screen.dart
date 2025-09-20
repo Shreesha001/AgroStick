@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:agro_stick/theme/colors.dart';
+import 'package:agro_stick/l10n/app_localizations.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 class HistoryScreen extends StatefulWidget {
@@ -12,9 +13,9 @@ class HistoryScreen extends StatefulWidget {
 
 class _HistoryScreenState extends State<HistoryScreen> {
   final List<Map<String, dynamic>> historyCards = [
-    {'title': 'Today', 'count': 3, 'period': 'daily', 'icon': Icons.today},
-    {'title': 'This Week', 'count': 15, 'period': 'weekly', 'icon': Icons.calendar_view_week},
-    {'title': 'This Month', 'count': 60, 'period': 'monthly', 'icon': Icons.calendar_month},
+    {'title': 'today', 'count': 3, 'period': 'daily', 'icon': Icons.today},
+    {'title': 'thisWeek', 'count': 15, 'period': 'weekly', 'icon': Icons.calendar_view_week},
+    {'title': 'thisMonth', 'count': 60, 'period': 'monthly', 'icon': Icons.calendar_month},
   ];
 
   Map<String, dynamic>? selectedCard;
@@ -32,7 +33,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             FlSpot(20, 2.5),
           ],
           'xLabels': <String>['12AM', '4AM', '8AM', '12PM', '4PM', '8PM'],
-          'yLabel': 'Sprays',
+          'yLabel': 'sprays',
         };
       case 'weekly':
         return {
@@ -46,7 +47,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             FlSpot(6, 1.5),
           ],
           'xLabels': <String>['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-          'yLabel': 'Sprays',
+          'yLabel': 'sprays',
         };
       case 'monthly':
         return {
@@ -60,18 +61,18 @@ class _HistoryScreenState extends State<HistoryScreen> {
             FlSpot(30, 1.5),
           ],
           'xLabels': <String>['1', '5', '10', '15', '20', '25', '30'],
-          'yLabel': 'Sprays',
+          'yLabel': 'sprays',
         };
       default:
         return {
           'spots': <FlSpot>[],
           'xLabels': <String>[],
-          'yLabel': 'Sprays',
+          'yLabel': 'sprays',
         };
     }
   }
 
-  List<Map<String, dynamic>> getSprayDetails(String? period, int count) {
+  List<Map<String, dynamic>> getSprayDetails(String? period, int count, AppLocalizations t) {
     List<Map<String, dynamic>> details = [];
     for (int i = 0; i < (count > 5 ? 5 : count); i++) {
       String time;
@@ -90,7 +91,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           time = 'Unknown';
       }
       details.add({
-        'title': 'Spray #${i + 1}',
+        'title': t.sprayNumber(i + 1),
         'time': time,
         'amount': amount,
       });
@@ -100,6 +101,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
@@ -107,7 +109,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.primaryGreen,
         title: Text(
-          'Spray History',
+          t.sprayHistory,
           style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: Colors.white),
         ),
       ),
@@ -117,8 +119,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
             SliverPadding(
               padding: EdgeInsets.all(screenWidth * 0.04),
               sliver: selectedCard == null
-                  ? _buildSummaryView(screenWidth, screenHeight)
-                  : _buildDetailView(screenWidth, screenHeight),
+                  ? _buildSummaryView(screenWidth, screenHeight, t)
+                  : _buildDetailView(screenWidth, screenHeight, t),
             ),
           ],
         ),
@@ -126,7 +128,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  Widget _buildSummaryView(double screenWidth, double screenHeight) {
+  Widget _buildSummaryView(double screenWidth, double screenHeight, AppLocalizations t) {
     return SliverList(
       delegate: SliverChildListDelegate([
         SizedBox(height: screenHeight * 0.02),
@@ -142,6 +144,21 @@ class _HistoryScreenState extends State<HistoryScreen> {
           itemCount: historyCards.length,
           itemBuilder: (context, index) {
             final card = historyCards[index];
+            String title;
+            switch (card['title'] as String) {
+              case 'today':
+                title = t.today;
+                break;
+              case 'thisWeek':
+                title = t.thisWeek;
+                break;
+              case 'thisMonth':
+                title = t.thisMonth;
+                break;
+              default:
+                title = card['title'] as String;
+            }
+            
             return GestureDetector(
               onTap: () {
                 setState(() {
@@ -155,7 +172,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 ),
                 color: Colors.white,
                 child: Padding(
-                  padding: EdgeInsets.all(screenWidth * 0.03),
+                  padding: EdgeInsets.all(screenWidth * 0.025),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -167,7 +184,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       ),
                       SizedBox(height: screenHeight * 0.01),
                       Text(
-                        card['title'] as String,
+                        title,
                         style: GoogleFonts.poppins(
                           fontSize: screenWidth * 0.045,
                           fontWeight: FontWeight.bold,
@@ -178,7 +195,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       ),
                       SizedBox(height: screenHeight * 0.005),
                       Text(
-                        '${card['count']} Sprays',
+                        '${card['count']} ${t.sprays}',
                         style: GoogleFonts.poppins(
                           fontSize: screenWidth * 0.04,
                           color: Colors.grey[700],
@@ -197,14 +214,29 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  Widget _buildDetailView(double screenWidth, double screenHeight) {
+  Widget _buildDetailView(double screenWidth, double screenHeight, AppLocalizations t) {
     final period = selectedCard?['period'] as String? ?? 'daily';
     final count = selectedCard?['count'] as int? ?? 0;
     final graphData = getGraphData(period);
-    final sprayDetails = getSprayDetails(period, count);
+    final sprayDetails = getSprayDetails(period, count, t);
     final spots = graphData['spots'] as List<FlSpot>? ?? <FlSpot>[];
     final xLabels = graphData['xLabels'] as List<String>? ?? <String>[];
-    final yLabel = graphData['yLabel'] as String? ?? 'Sprays';
+    final yLabel = graphData['yLabel'] as String? ?? 'sprays';
+    
+    String title;
+    switch (selectedCard?['title'] as String?) {
+      case 'today':
+        title = t.today;
+        break;
+      case 'thisWeek':
+        title = t.thisWeek;
+        break;
+      case 'thisMonth':
+        title = t.thisMonth;
+        break;
+      default:
+        title = selectedCard?['title'] as String? ?? 'Details';
+    }
 
     return SliverList(
       delegate: SliverChildListDelegate([
@@ -219,7 +251,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                selectedCard?['title'] as String? ?? 'Details',
+                title,
                 style: GoogleFonts.poppins(
                   fontSize: screenWidth * 0.06,
                   fontWeight: FontWeight.w600,
@@ -228,7 +260,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               ),
               SizedBox(height: screenHeight * 0.02),
               Text(
-                'Spray Details',
+                t.sprayDetails,
                 style: GoogleFonts.poppins(
                   fontSize: screenWidth * 0.05,
                   fontWeight: FontWeight.bold,
@@ -260,7 +292,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       ),
                     ),
                     subtitle: Text(
-                      'Time: ${detail['time']}\nAmount: ${detail['amount']}L',
+                      '${t.time}: ${detail['time']}\n${t.amount}: ${detail['amount']}${t.liters}',
                       style: GoogleFonts.poppins(
                         fontSize: screenWidth * 0.04,
                         color: Colors.grey[700],
@@ -278,7 +310,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               }).toList(),
               SizedBox(height: screenHeight * 0.02),
               Text(
-                'Spray Trend',
+                t.sprayTrend,
                 style: GoogleFonts.poppins(
                   fontSize: screenWidth * 0.05,
                   fontWeight: FontWeight.bold,
@@ -346,7 +378,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         ),
                         leftTitles: AxisTitles(
                           axisNameWidget: Text(
-                            yLabel,
+                            t.sprays,
                             style: GoogleFonts.poppins(
                               fontSize: screenWidth * 0.04,
                               color: Colors.grey[800],

@@ -25,5 +25,19 @@
   "idle": "निष्क्रिय",
   "spraying": "स्प्रे कर रहे हैं",
   "blogs": "ब्लॉग",
-  "viewAll": "सभी देखें"
+  "viewAll": "सभी देखें",
+  
+  // HistoryScreen translations
+  "sprayHistory": "स्प्रे इतिहास",
+  "today": "आज",
+  "thisWeek": "इस सप्ताह",
+  "thisMonth": "इस महीने",
+  "sprays": "स्प्रे",
+  "sprayDetails": "स्प्रे विवरण",
+  "sprayTrend": "स्प्रे रुझान",
+  "spray": "स्प्रे",
+  "time": "समय",
+  "amount": "मात्रा",
+  "liters": "लीटर",
+  "sprayNumber": "स्प्रे #{}"
 }

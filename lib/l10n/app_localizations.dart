@@ -47,12 +47,12 @@ import 'app_localizations_pa.dart';
 ///
 /// iOS applications define key application metadata, including supported
 /// locales, in an Info.plist file that is built into the application bundle.
-/// To configure the locales supported by your app, you’ll need to edit this
+/// To configure the locales supported by your app, you'll need to edit this
 /// file.
 ///
-/// First, open your project’s ios/Runner.xcworkspace Xcode workspace file.
+/// First, open your project's ios/Runner.xcworkspace Xcode workspace file.
 /// Then, in the Project Navigator, open the Info.plist file under the Runner
-/// project’s Runner folder.
+/// project's Runner folder.
 ///
 /// Next, select the Information Property List item, select Add Item from the
 /// Editor menu, then select Localizations from the pop-up menu.
@@ -255,6 +255,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'View All'**
   String get viewAll;
+
+  /// No description provided for @sprayHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Spray History'**
+  String get sprayHistory;
+
+  /// No description provided for @today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get today;
+
+  /// No description provided for @thisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'This Week'**
+  String get thisWeek;
+
+  /// No description provided for @thisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'This Month'**
+  String get thisMonth;
+
+  /// No description provided for @sprays.
+  ///
+  /// In en, this message translates to:
+  /// **'Sprays'**
+  String get sprays;
+
+  /// No description provided for @sprayDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Spray Details'**
+  String get sprayDetails;
+
+  /// No description provided for @sprayTrend.
+  ///
+  /// In en, this message translates to:
+  /// **'Spray Trend'**
+  String get sprayTrend;
+
+  /// No description provided for @spray.
+  ///
+  /// In en, this message translates to:
+  /// **'Spray'**
+  String get spray;
+
+  /// No description provided for @time.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get time;
+
+  /// No description provided for @amount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get amount;
+
+  /// No description provided for @liters.
+  ///
+  /// In en, this message translates to:
+  /// **'L'**
+  String get liters;
+
+  /// No description provided for @sprayNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Spray #{}'**
+  String sprayNumber(Object number);
 }
 
 class _AppLocalizationsDelegate

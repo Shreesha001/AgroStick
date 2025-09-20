@@ -25,5 +25,19 @@
   "idle": "ਨਿਸ਼ਕ੍ਰਿਆ",
   "spraying": "ਸਪਰੇ ਕਰ ਰਹੇ ਹਾਂ",
   "blogs": "ਬਲੌਗ",
-  "viewAll": "ਸਭ ਵੇਖੋ"
+  "viewAll": "ਸਭ ਵੇਖੋ",
+  
+  // HistoryScreen translations
+  "sprayHistory": "ਸਪਰੇ ਇਤਿਹਾਸ",
+  "today": "ਅੱਜ",
+  "thisWeek": "ਇਸ ਹਫ਼ਤੇ",
+  "thisMonth": "ਇਸ ਮਹੀਨੇ",
+  "sprays": "ਸਪਰੇ",
+  "sprayDetails": "ਸਪਰੇ ਵੇਰਵੇ",
+  "sprayTrend": "ਸਪਰੇ ਰੁਝਾਨ",
+  "spray": "ਸਪਰੇ",
+  "time": "ਸਮਾਂ",
+  "amount": "ਮਾਤਰਾ",
+  "liters": "ਲੀਟਰ",
+  "sprayNumber": "ਸਪਰੇ #{}"
 }

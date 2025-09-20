@@ -4,7 +4,7 @@ import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
 
-/// The translations for Panjabi Punjabi (`pa`).
+/// The translations for Punjabi (`pa`).
 class AppLocalizationsPa extends AppLocalizations {
   AppLocalizationsPa([String locale = 'pa']) : super(locale);
 
@@ -87,4 +87,48 @@ class AppLocalizationsPa extends AppLocalizations {
 
   @override
   String get viewAll => 'ਸਭ ਵੇਖੋ';
+
+  @override
+  String get sprayHistory => 'ਸਪਰੇ ਇਤਿਹਾਸ';
+
+  @override
+  String get today => 'ਅੱਜ';
+
+  @override
+  String get thisWeek => 'ਇਸ ਹਫ਼ਤੇ';
+
+  @override
+  String get thisMonth => 'ਇਸ ਮਹੀਨੇ';
+
+  @override
+  String get sprays => 'ਸਪਰੇ';
+
+  @override
+  String get sprayDetails => 'ਸਪਰੇ ਵੇਰਵੇ';
+
+  @override
+  String get sprayTrend => 'ਸਪਰੇ ਰੁਝਾਨ';
+
+  @override
+  String get spray => 'ਸਪਰੇ';
+
+  @override
+  String get time => 'ਸਮਾਂ';
+
+  @override
+  String get amount => 'ਮਾਤਰਾ';
+
+  @override
+  String get liters => 'ਲੀਟਰ';
+
+  @override
+  String sprayNumber(Object number) {
+    return intl.Intl.message(
+      'ਸਪਰੇ #$number',
+      name: 'sprayNumber',
+      args: [number],
+      desc: 'Dynamic spray number like \'ਸਪਰੇ #1\'',
+      examples: {'number': 1},
+    );
+  }
 }
