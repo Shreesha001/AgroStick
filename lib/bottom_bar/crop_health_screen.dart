@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:agro_stick/theme/colors.dart';
-import 'package:agro_stick/l10n/app_localizations.dart';
 import 'package:agro_stick/features/map/farm_boundary/farm_boundary_screen.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import 'package:tflite_flutter/tflite_flutter.dart' as tfl;
-import 'package:image/image.dart' as img;
 import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'dart:async';
+import '../../secrets.dart'; // Import secrets
 
 class CropHealthScreen extends StatefulWidget {
   const CropHealthScreen({super.key});
@@ -17,148 +17,85 @@ class CropHealthScreen extends StatefulWidget {
 }
 
 class _CropHealthScreenState extends State<CropHealthScreen> {
-  // Placeholder data
-  String cropStatus = "unhealthy"; // Use key instead of hardcoded value
+  // Dynamic data - initially empty
+  String cropStatus = ""; // Initially empty
+  double _infectionPercentage = 0.0; // Initially 0
   String _humidity = '65%';
-  String _soilMoisture = 'optimal'; // Use key instead of hardcoded value
-  List<Map<String, dynamic>> diseaseAlerts = [
-    {"name": "Leaf Rust", "severity": "Low"},
-    {"name": "Brown Spot", "severity": "Medium"},
-  ];
+  String _soilMoisture = 'optimal';
+  List<Map<String, dynamic>> diseaseAlerts = [];
+
+  // AI response variables
+  int? _infectionLevel;
+  String? _diseaseName;
+  String? _pesticideName;
+  String? _dosage;
+  String? _frequency;
+  String? _precautions;
+  bool _isAnalyzing = false;
+  bool _isRateLimited = false;
+  String _selectedLanguage = 'en'; // Default English
+
+  // Rate limiting
+  DateTime? _lastRequestTime;
+  static const Duration _rateLimitDelay = Duration(seconds: 5);
+  static const int _maxRetries = 3;
+  int _retryCount = 0;
 
   // Image picker instance
   final ImagePicker _picker = ImagePicker();
 
-  // ML
-  tfl.Interpreter? _interpreter;
-  bool _modelLoading = false;
+  // Scan result
   String? _scanResult;
   XFile? _lastImage;
-  List<String>? _classLabels;
 
   @override
   void initState() {
     super.initState();
-    _loadModel();
+    _selectedLanguage = _getLanguageFromProfile(); // Get from profile/settings
   }
 
-  Future<void> _loadModel() async {
-    setState(() { _modelLoading = true; });
-    try {
-      _interpreter = await tfl.Interpreter.fromAsset('lib/model/plant_disease_model.tflite');
-      // Load class labels (supports multiple JSON formats)
-      final jsonStr = await DefaultAssetBundle.of(context).loadString('lib/features/blog/models/classes.json');
-      final dynamic decoded = json.decode(jsonStr);
-      if (decoded is List) {
-        _classLabels = decoded.map((e) => e.toString()).toList();
-      } else if (decoded is Map<String, dynamic>) {
-        if (decoded.containsKey('classes') && decoded['classes'] is List) {
-          _classLabels = (decoded['classes'] as List).map((e) => e.toString()).toList();
-        } else {
-          // If the map is {"Label": index, ...}, sort by value (index) and take keys as labels
-          final entries = decoded.entries.toList();
-          final allValuesAreNums = entries.every((e) => e.value is num);
-          if (allValuesAreNums) {
-            entries.sort((a, b) => (a.value as num).compareTo(b.value as num));
-            _classLabels = entries.map((e) => e.key.toString()).toList();
-          } else {
-            // Fallback: if map is {"0":"Label", ...}, sort by numeric key and take values
-            entries.sort((a, b) {
-              int pa = int.tryParse(a.key) ?? 0;
-              int pb = int.tryParse(b.key) ?? 0;
-              return pa.compareTo(pb);
-            });
-            _classLabels = entries.map((e) => e.value.toString()).toList();
-          }
+  // Get language from profile/settings (you'll need to implement this)
+  String _getLanguageFromProfile() {
+    // TODO: Implement language retrieval from shared preferences or profile
+    // For now, returning 'en'
+    return 'en';
+  }
+
+  // Rate limiting helper
+  Future<bool> _checkRateLimit() async {
+    if (_lastRequestTime == null) {
+      _lastRequestTime = DateTime.now();
+      return true;
+    }
+
+    final timeSinceLastRequest = DateTime.now().difference(_lastRequestTime!);
+    if (timeSinceLastRequest < _rateLimitDelay) {
+      final waitTime = _rateLimitDelay - timeSinceLastRequest;
+      if (mounted) {
+        setState(() {
+          _isRateLimited = true;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Rate limited. Please wait ${waitTime.inSeconds} seconds...'),
+            duration: waitTime,
+          ),
+        );
+        await Future.delayed(waitTime);
+        if (mounted) {
+          setState(() {
+            _isRateLimited = false;
+          });
         }
-      } else {
-        _classLabels = null; // fallback
       }
-    } catch (e) {
-      _scanResult = 'Failed to load model: $e';
-    } finally {
-      if (mounted) setState(() { _modelLoading = false; });
+      return false;
     }
+
+    _lastRequestTime = DateTime.now();
+    return true;
   }
 
-  Future<void> _runInferenceOnImage(XFile imageFile) async {
-    if (_interpreter == null) {
-      _scanResult = 'Model not loaded';
-      if (mounted) setState(() {});
-      return;
-    }
-
-    try {
-      final bytes = await File(imageFile.path).readAsBytes();
-      img.Image? decoded = img.decodeImage(bytes);
-      if (decoded == null) {
-        _scanResult = 'Could not decode image';
-        if (mounted) setState(() {});
-        return;
-      }
-
-      final inputTensor = _interpreter!.getInputTensors().first;
-      final outputTensor = _interpreter!.getOutputTensors().first;
-      final inputShape = inputTensor.shape; // [1,h,w,c]
-      final h = inputShape.length >= 2 ? inputShape[1] : 224;
-      final w = inputShape.length >= 3 ? inputShape[2] : 224;
-      final c = inputShape.length >= 4 ? inputShape[3] : 3;
-
-      // Resize and normalize
-      final resized = img.copyResize(decoded, width: w, height: h);
-
-      final inputType = inputTensor.type;
-      dynamic input;
-      
-      if (inputType == tfl.TfLiteType.kTfLiteFloat32) {
-        input = List.generate(1, (_) => List.generate(h, (y) => List.generate(w, (x) {
-              final px = resized.getPixel(x, y);
-              final r = px.r / 255.0;
-              final g = px.g / 255.0;
-              final b = px.b / 255.0;
-              return c == 1 ? [0.299*r + 0.587*g + 0.114*b] : [r, g, b];
-            })));
-      } else {
-        // uint8
-        input = List.generate(1, (_) => List.generate(h, (y) => List.generate(w, (x) {
-              final px = resized.getPixel(x, y);
-              final r = px.r;
-              final g = px.g;
-              final b = px.b;
-              return c == 1 ? [((0.299*r + 0.587*g + 0.114*b)).round()] : [r, g, b];
-            })));
-      }
-
-      // Prepare output buffer
-      final outShape = outputTensor.shape; // [1, numClasses] or similar
-      int numOut = 1;
-      for (final d in outShape.skip(1)) { numOut *= d; }
-      List<List<double>> output = List.generate(1, (_) => List.filled(numOut, 0.0));
-
-      _interpreter!.run(input, output);
-
-      // Argmax
-      double maxVal = -1e9;
-      int maxIdx = -1;
-      for (int i = 0; i < numOut; i++) {
-        final v = output[0][i];
-        if (v > maxVal) { maxVal = v; maxIdx = i; }
-      }
-
-      _lastImage = imageFile;
-      final label = (_classLabels != null && maxIdx >= 0 && maxIdx < _classLabels!.length)
-          ? _classLabels![maxIdx]
-          : 'class #$maxIdx';
-      // Only keep the prediction label; hide score
-      _scanResult = label;
-      if (mounted) setState(() {});
-    } catch (e) {
-      _scanResult = 'Inference failed: $e';
-      if (mounted) setState(() {});
-    }
-  }
-
-  Widget dataCard(String title, String value, Color color, IconData icon, double screenWidth, AppLocalizations t) {
+  Widget dataCard(String title, String value, Color color, IconData icon, double screenWidth) {
     return Container(
       width: (screenWidth - 60) / 2,
       padding: EdgeInsets.all(screenWidth * 0.04),
@@ -200,25 +137,25 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
     );
   }
 
-  void _startSpray(AppLocalizations t) {
+  void _startSpray() {
     setState(() {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(t.startingPesticideSpray)),
+        const SnackBar(content: Text('Starting pesticide spray...')),
       );
     });
   }
 
-  void _stopSpray(AppLocalizations t) {
+  void _stopSpray() {
     setState(() {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(t.stoppingPesticideSpray)),
+        const SnackBar(content: Text('Stopping pesticide spray...')),
       );
     });
   }
 
-  void _scheduleSpray(AppLocalizations t) {
+  void _scheduleSpray() {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(t.openingSpraySchedule)),
+      const SnackBar(content: Text('Opening spray schedule...')),
     );
   }
 
@@ -231,13 +168,225 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
     );
   }
 
-  void _scanField(AppLocalizations t) {
+  Future<Map<String, dynamic>?> _makeApiRequest(String base64Image, {int retryCount = 0}) async {
+    try {
+      String prompt = """
+You are an expert plant pathologist and agricultural advisor.
+Analyze the uploaded plant leaf image and provide:
+1. Infection level on a scale of 1 (healthy) to 5 (severely infected).
+2. Type of infection/disease.
+3. Pesticide recommendation:
+   - Name
+   - Dosage per hectare
+   - Application frequency
+   - Safety precautions
+
+Respond in JSON format like:
+{
+  "infection_level": 3,
+  "disease_name": "Early Blight",
+  "pesticide": {
+    "name": "Mancozeb",
+    "dosage": "2.5 kg/ha",
+    "frequency": "Every 10 days",
+    "precautions": "Wear gloves and mask"
+  }
+}
+""";
+
+      // Add language context if needed
+      if (_selectedLanguage != 'en') {
+        prompt = """
+Translate your response to ${_selectedLanguage.toUpperCase()} language after the JSON.
+First provide JSON analysis, then translate the disease name and recommendations.
+
+$prompt
+""";
+      }
+
+      final url = Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$geminiApiKey');
+      final headers = {
+        'Content-Type': 'application/json',
+      };
+      final body = jsonEncode({
+        "contents": [
+          {
+            "parts": [
+              {"text": prompt},
+              {
+                "inline_data": {
+                  "mime_type": "image/jpeg",
+                  "data": base64Image
+                }
+              }
+            ]
+          }
+        ],
+        "generationConfig": {
+          "temperature": 0.7,
+          "topK": 40,
+          "topP": 0.95,
+          "maxOutputTokens": 1024,
+        }
+      });
+
+      final response = await http.post(url, headers: headers, body: body);
+
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        if (jsonResponse['candidates'] != null && jsonResponse['candidates'].isNotEmpty) {
+          final content = jsonResponse['candidates'][0]['content']['parts'][0]['text'];
+          
+          // Extract JSON from the response
+          final jsonMatch = RegExp(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}').firstMatch(content);
+          if (jsonMatch != null) {
+            final jsonString = jsonMatch.group(0);
+            if (jsonString != null) {
+              final result = jsonDecode(jsonString);
+              
+              // If language translation is needed, extract it
+              if (_selectedLanguage != 'en') {
+                final translatedMatch = RegExp(r'Translation:?\s*(.*)', dotAll: true).firstMatch(content);
+                if (translatedMatch != null) {
+                  result['translated_response'] = translatedMatch.group(1)?.trim();
+                }
+              }
+              
+              return result;
+            }
+          }
+        }
+        return null;
+      } else if (response.statusCode == 429) {
+        // Rate limit exceeded - implement exponential backoff
+        final backoffDelay = Duration(seconds: (1 << retryCount));
+        if (retryCount < _maxRetries) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Rate limited. Retrying in ${backoffDelay.inSeconds} seconds... (${retryCount + 1}/$_maxRetries)'),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
+          await Future.delayed(backoffDelay);
+          return _makeApiRequest(base64Image, retryCount: retryCount + 1);
+        } else {
+          throw Exception('Max retries exceeded due to rate limiting');
+        }
+      } else {
+        throw Exception('API Error: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Request failed: $e');
+    }
+  }
+
+  Future<void> _runInferenceOnImage(XFile imageFile) async {
+    // Check rate limit first
+    final canProceed = await _checkRateLimit();
+    if (!canProceed) return;
+
+    setState(() {
+      _isAnalyzing = true;
+      _scanResult = null;
+      _retryCount = 0;
+    });
+
+    try {
+      final bytes = await File(imageFile.path).readAsBytes();
+      String base64Image = base64Encode(bytes);
+
+      // Additional safety delay
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      final parsedJson = await _makeApiRequest(base64Image, retryCount: _retryCount);
+
+      if (parsedJson != null && mounted) {
+        setState(() {
+          _infectionLevel = parsedJson['infection_level'];
+          _diseaseName = parsedJson['disease_name'];
+          _pesticideName = parsedJson['pesticide']?['name'];
+          _dosage = parsedJson['pesticide']?['dosage'];
+          _frequency = parsedJson['pesticide']?['frequency'];
+          _precautions = parsedJson['pesticide']?['precautions'];
+
+          // Use translated response if available
+          _scanResult = parsedJson['translated_response'] ?? (_diseaseName ?? 'Unknown disease detected');
+          _lastImage = imageFile;
+
+          // Update crop status only after analysis
+          cropStatus = (_infectionLevel! <= 2) ? "healthy" : "unhealthy";
+
+          // Update infection percentage (scale 1-5 to 0-1)
+          _infectionPercentage = _infectionLevel! / 5.0;
+
+          // Update disease alerts
+          diseaseAlerts = [
+            {
+              "name": _diseaseName ?? "Unknown Disease", 
+              "severity": _levelToSeverity(_infectionLevel ?? 3)
+            },
+          ];
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Analysis complete: ${_diseaseName ?? 'Disease detected'}'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      } else if (mounted) {
+        setState(() {
+          _scanResult = 'Could not parse AI response';
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _scanResult = 'Error: ${e.toString()}';
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Analysis failed: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isAnalyzing = false;
+        });
+      }
+    }
+  }
+
+  String _levelToSeverity(int level) {
+    if (level <= 2) return "Low";
+    if (level == 3) return "Medium";
+    return "High";
+  }
+
+  void _scanField() {
+    if (_isRateLimited || _isAnalyzing) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please wait before scanning again'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(
-            t.selectImageSource,
+            'Select Image Source',
             style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
           ),
           content: Column(
@@ -246,12 +395,17 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
               ListTile(
                 leading: Icon(Icons.camera_alt, color: AppColors.primaryGreen),
                 title: Text(
-                  t.camera,
+                  'Camera',
                   style: GoogleFonts.poppins(),
                 ),
                 onTap: () async {
                   Navigator.of(context).pop();
-                  final XFile? image = await _picker.pickImage(source: ImageSource.camera);
+                  final XFile? image = await _picker.pickImage(
+                    source: ImageSource.camera,
+                    maxWidth: 1024,
+                    maxHeight: 1024,
+                    imageQuality: 80,
+                  );
                   if (image != null) {
                     await _runInferenceOnImage(image);
                   }
@@ -260,12 +414,17 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
               ListTile(
                 leading: Icon(Icons.photo_library, color: AppColors.primaryGreen),
                 title: Text(
-                  t.gallery,
+                  'Gallery',
                   style: GoogleFonts.poppins(),
                 ),
                 onTap: () async {
                   Navigator.of(context).pop();
-                  final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+                  final XFile? image = await _picker.pickImage(
+                    source: ImageSource.gallery,
+                    maxWidth: 1024,
+                    maxHeight: 1024,
+                    imageQuality: 80,
+                  );
                   if (image != null) {
                     await _runInferenceOnImage(image);
                   }
@@ -277,7 +436,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: Text(
-                t.cancel,
+                'Cancel',
                 style: GoogleFonts.poppins(color: Colors.grey),
               ),
             ),
@@ -287,20 +446,22 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
     );
   }
 
-  String _getStatusText(String statusKey, AppLocalizations t) {
+  String _getStatusText(String statusKey) {
+    if (statusKey.isEmpty) return 'Not Analyzed';
     switch (statusKey) {
       case 'healthy':
-        return t.healthy;
+        return 'Healthy';
       case 'unhealthy':
-        return t.unhealthy;
+        return 'Unhealthy';
       case 'optimal':
-        return t.optimal;
+        return 'Optimal';
       default:
         return statusKey;
     }
   }
 
   Color _getStatusColor(String statusKey) {
+    if (statusKey.isEmpty) return Colors.grey;
     switch (statusKey) {
       case 'healthy':
         return Colors.green;
@@ -312,6 +473,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
   }
 
   IconData _getStatusIcon(String statusKey) {
+    if (statusKey.isEmpty) return Icons.help_outline;
     switch (statusKey) {
       case 'healthy':
         return Icons.check_circle;
@@ -322,20 +484,30 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
     }
   }
 
+  // Get progress bar color based on percentage
+  Color _getProgressColor(double percentage) {
+    if (percentage <= 0.3) {
+      return Colors.green;
+    } else if (percentage <= 0.7) {
+      return Colors.orange;
+    } else {
+      return Colors.red;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final t = AppLocalizations.of(context)!;
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    final cropStatusText = _getStatusText(cropStatus, t);
-    final soilMoistureText = _getStatusText(_soilMoisture, t);
+    final cropStatusText = _getStatusText(cropStatus);
+    final soilMoistureText = _getStatusText(_soilMoisture);
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.primaryGreen,
         title: Text(
-          t.cropHealth,
+          'Crop Health',
           style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: Colors.white),
         ),
       ),
@@ -367,7 +539,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                       Icon(Icons.map, color: AppColors.primaryGreen, size: 24),
                       SizedBox(width: 8),
                       Text(
-                        t.farmMapping,
+                        'Farm Mapping',
                         style: GoogleFonts.poppins(
                           fontSize: screenWidth * 0.045,
                           fontWeight: FontWeight.w600,
@@ -377,7 +549,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                   ),
                   SizedBox(height: 8),
                   Text(
-                    t.farmMappingDescription,
+                    'Map your farm boundaries and track planting areas',
                     style: GoogleFonts.poppins(
                       fontSize: screenWidth * 0.04,
                       color: Colors.grey[600],
@@ -390,7 +562,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                       onPressed: _openFarmMapping,
                       icon: Icon(Icons.map, size: 20),
                       label: Text(
-                        t.openFarmMapping,
+                        'Open Farm Mapping',
                         style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
                       ),
                       style: ElevatedButton.styleFrom(
@@ -431,7 +603,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                       Icon(Icons.camera_alt, color: AppColors.primaryGreen, size: 24),
                       SizedBox(width: 8),
                       Text(
-                        t.scanField,
+                        'Scan Field',
                         style: GoogleFonts.poppins(
                           fontSize: screenWidth * 0.045,
                           fontWeight: FontWeight.w600,
@@ -441,7 +613,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                   ),
                   SizedBox(height: 8),
                   Text(
-                    t.scanFieldDescription,
+                    'Take a photo of your plants to analyze health and detect diseases',
                     style: GoogleFonts.poppins(
                       fontSize: screenWidth * 0.04,
                       color: Colors.grey[600],
@@ -451,14 +623,27 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: () => _scanField(t),
-                      icon: Icon(Icons.camera_alt, size: 20),
+                      onPressed: (_isAnalyzing || _isRateLimited) ? null : () => _scanField(),
+                      icon: _isAnalyzing 
+                          ? SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            )
+                          : Icon(Icons.camera_alt, size: 20),
                       label: Text(
-                        t.fieldScan,
+                        _isAnalyzing 
+                            ? 'Analyzing...' 
+                            : (_isRateLimited ? 'Rate Limited' : 'Field Scan'),
                         style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryGreen,
+                        backgroundColor: (_isAnalyzing || _isRateLimited)
+                            ? AppColors.primaryGreen.withOpacity(0.5)
+                            : AppColors.primaryGreen,
                         foregroundColor: Colors.white,
                         minimumSize: Size(double.infinity, screenHeight * 0.06),
                         shape: RoundedRectangleBorder(
@@ -467,21 +652,6 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                       ),
                     ),
                   ),
-                  if (_modelLoading)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: Row(
-                        children: [
-                          const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(t.loadingModel, style: GoogleFonts.poppins(color: Colors.grey[700])),
-                        ],
-                      ),
-                    ),
                   if (_lastImage != null || _scanResult != null) ...[
                     const SizedBox(height: 12),
                     if (_lastImage != null)
@@ -506,7 +676,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                             border: Border.all(color: Colors.green.withOpacity(0.3)),
                           ),
                           child: Text(
-                            _scanResult!,
+                            'Detected: $_scanResult!',
                             style: GoogleFonts.poppins(
                               fontWeight: FontWeight.w600,
                               color: Colors.green[800],
@@ -523,7 +693,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
             
             // 3. Quick Actions
             Text(
-              t.quickActions,
+              'Quick Actions',
               style: GoogleFonts.poppins(
                 fontSize: screenWidth * 0.05,
                 fontWeight: FontWeight.w600,
@@ -534,7 +704,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton(
-                  onPressed: () => _startSpray(t),
+                  onPressed: () => _startSpray(),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryGreen,
                     minimumSize: Size(screenWidth * 0.42, screenHeight * 0.07),
@@ -546,7 +716,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                       Icon(Icons.play_arrow, size: 20, color: Colors.white),
                       SizedBox(width: 4),
                       Text(
-                        t.startSpray,
+                        'Start Spray',
                         style: GoogleFonts.poppins(
                           fontWeight: FontWeight.bold,
                           fontSize: screenWidth * 0.04,
@@ -557,7 +727,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                   ),
                 ),
                 ElevatedButton(
-                  onPressed: () => _stopSpray(t),
+                  onPressed: () => _stopSpray(),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red,
                     minimumSize: Size(screenWidth * 0.42, screenHeight * 0.07),
@@ -569,7 +739,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                       Icon(Icons.stop, size: 20, color: Colors.white),
                       SizedBox(width: 4),
                       Text(
-                        t.stopSpray,
+                        'Stop Spray',
                         style: GoogleFonts.poppins(
                           fontWeight: FontWeight.bold,
                           fontSize: screenWidth * 0.04,
@@ -583,7 +753,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
             ),
             SizedBox(height: screenHeight * 0.03),
             ElevatedButton(
-              onPressed: () => _scheduleSpray(t),
+              onPressed: () => _scheduleSpray(),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange,
                 minimumSize: Size(double.infinity, screenHeight * 0.07),
@@ -595,7 +765,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
                   Icon(Icons.schedule, size: 20, color: Colors.white),
                   SizedBox(width: 8),
                   Text(
-                    t.scheduleSpray,
+                    'Schedule Spray',
                     style: GoogleFonts.poppins(
                       fontWeight: FontWeight.bold,
                       fontSize: screenWidth * 0.045,
@@ -609,7 +779,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
             
             // 4. Humidity and Soil Condition Cards
             Text(
-              t.environmentalConditions,
+              'Environmental Conditions',
               style: GoogleFonts.poppins(
                 fontSize: screenWidth * 0.05,
                 fontWeight: FontWeight.w600,
@@ -620,215 +790,222 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
               spacing: 10,
               runSpacing: 15,
               children: [
-                dataCard(t.humidity, _humidity, Colors.blue, Icons.water_drop, screenWidth, t),
-                dataCard(t.soilCondition, soilMoistureText, Colors.brown, Icons.grass, screenWidth, t),
+                dataCard('Humidity', _humidity, Colors.blue, Icons.water_drop, screenWidth),
+                dataCard('Soil Condition', soilMoistureText, Colors.brown, Icons.grass, screenWidth),
               ],
             ),
-            SizedBox(height: screenHeight * 0.03),
+            SizedBox(height: screenHeight * 0.04),
             
-            // 5. Overall Infection Level
-            Container(
-              padding: EdgeInsets.all(screenWidth * 0.04),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.2),
-                    spreadRadius: 2,
-                    blurRadius: 5,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    t.overallInfectionLevel,
-                    style: GoogleFonts.poppins(
-                      fontSize: screenWidth * 0.045,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey[700],
+            // 5. Overall Infection Level - Only show after analysis
+            if (cropStatus.isNotEmpty) ...[
+              Container(
+                padding: EdgeInsets.all(screenWidth * 0.04),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(15),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.2),
+                      spreadRadius: 2,
+                      blurRadius: 5,
+                      offset: const Offset(0, 3),
                     ),
-                  ),
-                  SizedBox(height: 10),
-                  LinearProgressIndicator(
-                    value: 0.83,
-                    backgroundColor: Colors.grey[300],
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      Colors.red.withOpacity(0.8),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Overall Infection Level',
+                      style: GoogleFonts.poppins(
+                        fontSize: screenWidth * 0.045,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[700],
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '0%',
-                        style: GoogleFonts.poppins(
-                          fontSize: screenWidth * 0.035,
-                          color: Colors.grey,
-                        ),
+                    SizedBox(height: 10),
+                    LinearProgressIndicator(
+                      value: _infectionPercentage,
+                      backgroundColor: Colors.grey[300],
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        _getProgressColor(_infectionPercentage),
                       ),
-                      Text(
-                        '83%',
-                        style: GoogleFonts.poppins(
-                          fontSize: screenWidth * 0.035,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.red,
-                        ),
-                      ),
-                      Text(
-                        '100%',
-                        style: GoogleFonts.poppins(
-                          fontSize: screenWidth * 0.035,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: screenHeight * 0.03),
-            
-            // 6. Crop Status
-            Container(
-              padding: EdgeInsets.all(screenWidth * 0.04),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.2),
-                    spreadRadius: 2,
-                    blurRadius: 5,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        t.cropStatus,
-                        style: GoogleFonts.poppins(
-                          fontSize: screenWidth * 0.05,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      SizedBox(height: 5),
-                      Text(
-                        cropStatusText,
-                        style: GoogleFonts.poppins(
-                          fontSize: screenWidth * 0.045,
-                          fontWeight: FontWeight.w500,
-                          color: _getStatusColor(cropStatus),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Icon(
-                    _getStatusIcon(cropStatus),
-                    color: _getStatusColor(cropStatus),
-                    size: 40,
-                  )
-                ],
-              ),
-            ),
-            SizedBox(height: screenHeight * 0.03),
-            
-            // 7. Treatment Recommendations
-            Text(
-              t.treatmentRecommendations,
-              style: GoogleFonts.poppins(
-                fontSize: screenWidth * 0.05,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            SizedBox(height: 10),
-            Container(
-              padding: EdgeInsets.all(screenWidth * 0.04),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.2),
-                    spreadRadius: 2,
-                    blurRadius: 5,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    t.basedOnCurrentInfection,
-                    style: GoogleFonts.poppins(
-                      fontSize: screenWidth * 0.04,
-                      color: Colors.grey[700],
                     ),
-                  ),
-                  SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Icon(Icons.water_drop, color: AppColors.primaryGreen, size: 20),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          t.applyHighDosagePesticide,
+                    SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '0%',
                           style: GoogleFonts.poppins(
-                            fontSize: screenWidth * 0.04,
+                            fontSize: screenWidth * 0.035,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        Text(
+                          '${(_infectionPercentage * 100).toInt()}%',
+                          style: GoogleFonts.poppins(
+                            fontSize: screenWidth * 0.035,
+                            fontWeight: FontWeight.bold,
+                            color: _getProgressColor(_infectionPercentage),
+                          ),
+                        ),
+                        Text(
+                          '100%',
+                          style: GoogleFonts.poppins(
+                            fontSize: screenWidth * 0.035,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: screenHeight * 0.03),
+            ],
+            
+            // 6. Crop Status - Only show after analysis
+            if (cropStatus.isNotEmpty) ...[
+              Container(
+                padding: EdgeInsets.all(screenWidth * 0.04),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(15),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.2),
+                      spreadRadius: 2,
+                      blurRadius: 5,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Crop Status',
+                          style: GoogleFonts.poppins(
+                            fontSize: screenWidth * 0.05,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        SizedBox(height: 5),
+                        Text(
+                          cropStatusText,
+                          style: GoogleFonts.poppins(
+                            fontSize: screenWidth * 0.045,
                             fontWeight: FontWeight.w500,
-                            color: AppColors.primaryGreen,
+                            color: _getStatusColor(cropStatus),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Icon(Icons.schedule, color: Colors.orange, size: 20),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          t.inspectAndMonitorDaily,
-                          style: GoogleFonts.poppins(
-                            fontSize: screenWidth * 0.04,
-                            color: Colors.orange,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 8),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(Icons.warning_amber, color: Colors.red, size: 20),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          t.removeAffectedLeaves,
-                          style: GoogleFonts.poppins(
-                            fontSize: screenWidth * 0.04,
-                            color: Colors.red[700],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                    Icon(
+                      _getStatusIcon(cropStatus),
+                      color: _getStatusColor(cropStatus),
+                      size: 40,
+                    )
+                  ],
+                ),
               ),
-            ),
-            SizedBox(height: screenHeight * 0.02),
+              SizedBox(height: screenHeight * 0.03),
+            ],
+            
+            // 7. Treatment Recommendations - Only show after analysis
+            if (cropStatus.isNotEmpty) ...[
+              Text(
+                'Treatment Recommendations',
+                style: GoogleFonts.poppins(
+                  fontSize: screenWidth * 0.05,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              SizedBox(height: 10),
+              Container(
+                padding: EdgeInsets.all(screenWidth * 0.04),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(15),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.2),
+                      spreadRadius: 2,
+                      blurRadius: 5,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Based on current infection analysis',
+                      style: GoogleFonts.poppins(
+                        fontSize: screenWidth * 0.04,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    if (_pesticideName != null && _dosage != null && _frequency != null) ...[
+                      Row(
+                        children: [
+                          Icon(Icons.water_drop, color: AppColors.primaryGreen, size: 20),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Apply $_pesticideName at $_dosage, $_frequency.',
+                              style: GoogleFonts.poppins(
+                                fontSize: screenWidth * 0.04,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.primaryGreen,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Icon(Icons.warning_amber, color: Colors.red, size: 20),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Precautions: $_precautions',
+                              style: GoogleFonts.poppins(
+                                fontSize: screenWidth * 0.04,
+                                color: Colors.red[700],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ] else ...[
+                      Row(
+                        children: [
+                          Icon(Icons.info_outline, color: Colors.blue, size: 20),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Scan your field to get personalized treatment recommendations',
+                              style: GoogleFonts.poppins(
+                                fontSize: screenWidth * 0.04,
+                                color: Colors.blue[700],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              SizedBox(height: screenHeight * 0.02),
+            ],
           ],
         ),
       ),
