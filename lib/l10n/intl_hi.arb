@@ -10,6 +10,20 @@
   "saveProfile": "प्रोफाइल सहेजें",
   "logout": "लॉगआउट",
   "profileUpdated": "प्रोफाइल सफलतापूर्वक अपडेट की गई",
-  "profileUpdateError": "प्रोफाइल अपडेट करने में त्रुटि: {error}"
+  "profileUpdateError": "प्रोफाइल अपडेट करने में त्रुटि: {error}",
+  "welcome": "स्वागत है!",
+  "hi": "नमस्ते",
+  "weeklyWeather": "साप्ताहिक मौसम",
+  "fetchingWeather": "7-दिवसीय मौसम ला रहे हैं…",
+  "weatherUnavailable": "मौसम जानकारी उपलब्ध नहीं",
+  "espStatus": "ESP32-S3 स्थिति",
+  "connected": "संबद्ध",
+  "disconnected": "असंबद्ध",
+  "batteryLevel": "बैटरी स्तर",
+  "temperature": "तापमान",
+  "sprayStatus": "स्प्रे स्थिति",
+  "idle": "निष्क्रिय",
+  "spraying": "स्प्रे कर रहे हैं",
+  "blogs": "ब्लॉग",
+  "viewAll": "सभी देखें"
 }
-

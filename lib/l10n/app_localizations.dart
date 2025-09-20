@@ -165,6 +165,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Error updating profile: {error}'**
   String profileUpdateError(Object error);
+
+  /// No description provided for @welcome.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome!'**
+  String get welcome;
+
+  /// No description provided for @hi.
+  ///
+  /// In en, this message translates to:
+  /// **'Hi'**
+  String get hi;
+
+  /// No description provided for @weeklyWeather.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly Weather'**
+  String get weeklyWeather;
+
+  /// No description provided for @fetchingWeather.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching 7-day weather…'**
+  String get fetchingWeather;
+
+  /// No description provided for @weatherUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather unavailable'**
+  String get weatherUnavailable;
+
+  /// No description provided for @espStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'ESP32-S3 Status'**
+  String get espStatus;
+
+  /// No description provided for @connected.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected'**
+  String get connected;
+
+  /// No description provided for @disconnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnected'**
+  String get disconnected;
+
+  /// No description provided for @batteryLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Battery Level'**
+  String get batteryLevel;
+
+  /// No description provided for @temperature.
+  ///
+  /// In en, this message translates to:
+  /// **'Temperature'**
+  String get temperature;
+
+  /// No description provided for @sprayStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Spray Status'**
+  String get sprayStatus;
+
+  /// No description provided for @idle.
+  ///
+  /// In en, this message translates to:
+  /// **'Idle'**
+  String get idle;
+
+  /// No description provided for @spraying.
+  ///
+  /// In en, this message translates to:
+  /// **'Spraying'**
+  String get spraying;
+
+  /// No description provided for @blogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Blogs'**
+  String get blogs;
+
+  /// No description provided for @viewAll.
+  ///
+  /// In en, this message translates to:
+  /// **'View All'**
+  String get viewAll;
 }
 
 class _AppLocalizationsDelegate

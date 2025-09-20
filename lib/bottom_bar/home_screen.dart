@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:agro_stick/theme/colors.dart';
+import 'package:agro_stick/l10n/app_localizations.dart';
 import 'package:agro_stick/features/blog/models/blog_model.dart';
 import 'package:agro_stick/features/blog/services/blog_service.dart';
 import 'package:agro_stick/features/blog/screens/blog_list_screen.dart';
@@ -85,7 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
     } catch (e) {
       if (mounted) { // Check if widget is still mounted before updating state
         setState(() {
-          _weatherError = 'Weather unavailable';
+          _weatherError = AppLocalizations.of(context)?.weatherUnavailable ?? 'Weather unavailable';
         });
       }
     } finally {
@@ -103,7 +104,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  Widget _buildWeeklyWeather(double screenWidth) {
+  Widget _buildWeeklyWeather(double screenWidth, AppLocalizations t) {
     if (_loadingWeather) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
@@ -117,7 +118,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(width: 8),
             Text(
-              'Fetching 7-day weather…',
+              t.fetchingWeather,
               style: GoogleFonts.poppins(fontSize: screenWidth * 0.035, color: Colors.grey[700]),
             ),
           ],
@@ -139,7 +140,7 @@ class _HomeScreenState extends State<HomeScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Weekly Weather',
+          t.weeklyWeather,
           style: GoogleFonts.poppins(
             fontSize: screenWidth * 0.05,
             fontWeight: FontWeight.w600,
@@ -199,7 +200,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget dataCard(String title, String value, Color color, IconData icon, double screenWidth) {
+  Widget dataCard(String title, String value, Color color, IconData icon, double screenWidth, AppLocalizations t) {
     return Container(
       width: (screenWidth - 60) / 2, // 2 cards per row with spacing
       padding: EdgeInsets.all(screenWidth * 0.04),
@@ -406,9 +407,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     final user = FirebaseAuth.instance.currentUser;
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
+
+    final greeting = user != null 
+        ? '${t.hi}, ${user.email?.split("@")[0]}!' 
+        : t.welcome;
 
     return Scaffold(
       body: SafeArea(
@@ -418,7 +424,7 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                user != null ? 'Hi, ${user.email?.split("@")[0]}!' : 'Welcome!',
+                greeting,
                 style: GoogleFonts.poppins(
                   fontSize: screenWidth * 0.06,
                   fontWeight: FontWeight.w600,
@@ -451,7 +457,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               SizedBox(height: screenHeight * 0.03),
-              _buildWeeklyWeather(screenWidth),
+              _buildWeeklyWeather(screenWidth, t),
               SizedBox(height: screenHeight * 0.03),
               // Sensor Data Grid (2 per row)
               Wrap(
@@ -459,32 +465,36 @@ class _HomeScreenState extends State<HomeScreen> {
                 runSpacing: 15,
                 children: [
                   dataCard(
-                    'ESP32-S3 Status',
-                    _isDeviceConnected ? 'Connected' : 'Disconnected',
+                    t.espStatus,
+                    _isDeviceConnected ? t.connected : t.disconnected,
                     _isDeviceConnected ? Colors.green : Colors.red,
                     Icons.wifi,
                     screenWidth,
+                    t,
                   ),
                   dataCard(
-                    'Battery Level',
+                    t.batteryLevel,
                     _batteryLevel,
                     Colors.orange,
                     Icons.battery_full,
                     screenWidth,
+                    t,
                   ),
                   dataCard(
-                    'Temperature',
+                    t.temperature,
                     _temperature,
                     Colors.red,
                     Icons.thermostat,
                     screenWidth,
+                    t,
                   ),
                   dataCard(
-                    'Spray Status',
-                    _sprayStatus,
+                    t.sprayStatus,
+                    _sprayStatus == 'Spraying' ? t.spraying : t.idle,
                     _sprayStatus == 'Spraying' ? Colors.green : Colors.grey,
                     Icons.water_drop,
                     screenWidth,
+                    t,
                   ),
                 ],
               ),
@@ -496,7 +506,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Blogs',
+                    t.blogs,
                     style: GoogleFonts.poppins(
                       fontSize: screenWidth * 0.05,
                       fontWeight: FontWeight.w600,
@@ -513,7 +523,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     },
                     child: Text(
-                      'View All',
+                      t.viewAll,
                       style: GoogleFonts.poppins(
                         fontSize: screenWidth * 0.04,
                         color: AppColors.primaryGreen,

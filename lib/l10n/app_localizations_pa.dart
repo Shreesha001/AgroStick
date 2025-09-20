@@ -42,4 +42,49 @@ class AppLocalizationsPa extends AppLocalizations {
   String profileUpdateError(Object error) {
     return 'ਪ੍ਰੋਫਾਈਲ ਅਪਡੇਟ ਕਰਨ ਵਿੱਚ ਗਲਤੀ: $error';
   }
+
+  @override
+  String get welcome => 'ਸਵਾਗਤ ਹੈ!';
+
+  @override
+  String get hi => 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ';
+
+  @override
+  String get weeklyWeather => 'ਹਫ਼ਤਾਵਾਰੀ ਮੌਸਮ';
+
+  @override
+  String get fetchingWeather => '7-ਦਿਨਾਂ ਦਾ ਮੌਸਮ ਲੈ ਰਹੇ ਹਾਂ…';
+
+  @override
+  String get weatherUnavailable => 'ਮੌਸਮ ਜਾਣਕਾਰੀ ਉਪਲਬਧ ਨਹੀਂ';
+
+  @override
+  String get espStatus => 'ESP32-S3 ਹਾਲਤ';
+
+  @override
+  String get connected => 'ਜੁੜਿਆ ਹੋਇਆ';
+
+  @override
+  String get disconnected => 'ਅਣਜੁੜਿਆ';
+
+  @override
+  String get batteryLevel => 'ਬੈਟਰੀ ਪੱਧਰ';
+
+  @override
+  String get temperature => 'ਤਾਪਮਾਨ';
+
+  @override
+  String get sprayStatus => 'ਸਪਰੇ ਹਾਲਤ';
+
+  @override
+  String get idle => 'ਨਿਸ਼ਕ੍ਰਿਆ';
+
+  @override
+  String get spraying => 'ਸਪਰੇ ਕਰ ਰਹੇ ਹਾਂ';
+
+  @override
+  String get blogs => 'ਬਲੌਗ';
+
+  @override
+  String get viewAll => 'ਸਭ ਵੇਖੋ';
 }

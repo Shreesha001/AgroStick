@@ -10,6 +10,20 @@
   "saveProfile": "Save Profile",
   "logout": "Logout",
   "profileUpdated": "Profile updated successfully",
-  "profileUpdateError": "Error updating profile: {error}"
+  "profileUpdateError": "Error updating profile: {error}",
+  "welcome": "Welcome!",
+  "hi": "Hi",
+  "weeklyWeather": "Weekly Weather",
+  "fetchingWeather": "Fetching 7-day weather…",
+  "weatherUnavailable": "Weather unavailable",
+  "espStatus": "ESP32-S3 Status",
+  "connected": "Connected",
+  "disconnected": "Disconnected",
+  "batteryLevel": "Battery Level",
+  "temperature": "Temperature",
+  "sprayStatus": "Spray Status",
+  "idle": "Idle",
+  "spraying": "Spraying",
+  "blogs": "Blogs",
+  "viewAll": "View All"
 }
-

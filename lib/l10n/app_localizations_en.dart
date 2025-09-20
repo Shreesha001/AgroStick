@@ -42,4 +42,49 @@ class AppLocalizationsEn extends AppLocalizations {
   String profileUpdateError(Object error) {
     return 'Error updating profile: $error';
   }
+
+  @override
+  String get welcome => 'Welcome!';
+
+  @override
+  String get hi => 'Hi';
+
+  @override
+  String get weeklyWeather => 'Weekly Weather';
+
+  @override
+  String get fetchingWeather => 'Fetching 7-day weather…';
+
+  @override
+  String get weatherUnavailable => 'Weather unavailable';
+
+  @override
+  String get espStatus => 'ESP32-S3 Status';
+
+  @override
+  String get connected => 'Connected';
+
+  @override
+  String get disconnected => 'Disconnected';
+
+  @override
+  String get batteryLevel => 'Battery Level';
+
+  @override
+  String get temperature => 'Temperature';
+
+  @override
+  String get sprayStatus => 'Spray Status';
+
+  @override
+  String get idle => 'Idle';
+
+  @override
+  String get spraying => 'Spraying';
+
+  @override
+  String get blogs => 'Blogs';
+
+  @override
+  String get viewAll => 'View All';
 }
