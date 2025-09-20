@@ -236,7 +236,11 @@ class AppLocalizationsHi extends AppLocalizations {
   String get analyzingMessage => 'विश्लेषण कर रहे हैं...';
 
   @override
-  String rateLimitedRetryMessage(Object seconds, Object attempt, Object maxRetries) {
+  String rateLimitedRetryMessage(
+    Object seconds,
+    Object attempt,
+    Object maxRetries,
+  ) {
     return 'रेट सीमित। $seconds सेकंड में पुनः प्रयास कर रहे हैं... ($attempt/$maxRetries)';
   }
 
@@ -269,11 +273,25 @@ class AppLocalizationsHi extends AppLocalizations {
   String get highSeverity => 'उच्च';
 
   @override
-  String applyPesticideFormat(Object pesticide, Object dosage, Object frequency) {
+  String applyPesticideFormat(
+    Object pesticide,
+    Object dosage,
+    Object frequency,
+  ) {
     return '$pesticide को $dosage पर, $frequency।';
   }
 
   @override
   String get detected => 'पता चला';
-  
+
+  @override
+  String get pleaseWaitBeforeScanning =>
+      'कृपया स्कैन करने से पहले प्रतीक्षा करें';
+
+  @override
+  String get invalidImageMessage =>
+      'अपलोड की गई छवि फसल के पत्ते जैसी नहीं लगती। कृपया पत्ते या फसल की स्पष्ट छवि अपलोड करें।';
+
+  @override
+  String get tryAgain => 'फिर से प्रयास करें';
 }

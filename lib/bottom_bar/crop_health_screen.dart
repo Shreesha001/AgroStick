@@ -178,17 +178,23 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
     try {
       String prompt = """
 You are an expert plant pathologist and agricultural advisor.
-Analyze the uploaded plant leaf image and provide:
-1. Infection level on a scale of 1 (healthy) to 5 (severely infected).
-2. Type of infection/disease.
-3. Pesticide recommendation:
-   - Name
-   - Dosage per hectare
-   - Application frequency
-   - Safety precautions
 
-Respond in JSON format like:
+Analyze the uploaded plant leaf image and provide:
+1. Verify if the image contains a plant leaf relevant to crops.
+   - If it is not a leaf or is unrelated, respond with a clear message to the user like: "The uploaded image does not appear to be a crop leaf. Please upload a clear image of the leaf or crop."
+2. If it is a valid leaf, provide:
+   - Infection level on a scale of 1 (healthy) to 5 (severely infected)
+   - Type of infection/disease
+   - Pesticide recommendation including:
+     - Name
+     - Dosage per hectare
+     - Application frequency
+     - Safety precautions
+
+Always respond in JSON format like:
+
 {
+  "valid_leaf": true,  // false if not a leaf
   "infection_level": 3,
   "disease_name": "Early Blight",
   "pesticide": {
@@ -196,8 +202,13 @@ Respond in JSON format like:
     "dosage": "2.5 kg/ha",
     "frequency": "Every 10 days",
     "precautions": "Wear gloves and mask"
-  }
+  },
+  "message": "Optional guidance message for the user"
 }
+
+Notes:
+- If the image is invalid (not a leaf), set "valid_leaf" to false and provide a message in "message".
+- If the image is valid, set "valid_leaf" to true and fill the infection, disease, and pesticide fields.
 """;
 
       // Add language context for Gemini response translation
@@ -210,14 +221,15 @@ Respond in JSON format like:
         
         prompt = """
 First, provide the analysis in English JSON format as specified.
-Then, translate the disease name, pesticide name, dosage, frequency, and precautions to $targetLanguage.
+Then, translate the disease name, pesticide name, dosage, frequency, precautions, and user message to $targetLanguage.
 
 Respond with:
 1. JSON analysis (in English)
-2. TRANSLATED_RESPONSE: [translated disease name and recommendations in $targetLanguage]
+2. TRANSLATED_RESPONSE: [translated disease name, recommendations, and message in $targetLanguage]
 
 Example:
 {
+  "valid_leaf": true,
   "infection_level": 3,
   "disease_name": "Early Blight",
   "pesticide": {
@@ -225,9 +237,10 @@ Example:
     "dosage": "2.5 kg/ha",
     "frequency": "Every 10 days",
     "precautions": "Wear gloves and mask"
-  }
+  },
+  "message": "The crop shows moderate infection"
 }
-TRANSLATED_RESPONSE: बीमारी - प्रारंभिक झुलसा; दवा - मैनकोजेब; खुराक - 2.5 किलो/हेक्टेयर; आवृत्ति - हर 10 दिन; सावधानियां - दस्ताने और मास्क पहनें
+TRANSLATED_RESPONSE: बीमारी - प्रारंभिक झुलसा; दवा - मैनकोजेब; खुराक - 2.5 किलो/हेक्टेयर; आवृत्ति - हर 10 दिन; सावधानियां - दस्ताने और मास्क पहनें; संदेश - फसल में मध्यम संक्रमण दिख रहा है
 
 $prompt
 """;
@@ -292,6 +305,8 @@ $prompt
                         result['translated_disease'] = line.split('-')[1].trim();
                       } else if (line.toLowerCase().contains('दवा') || line.toLowerCase().contains('pesticide')) {
                         result['translated_pesticide'] = line.split('-')[1].trim();
+                      } else if (line.toLowerCase().contains('संदेश') || line.toLowerCase().contains('message')) {
+                        result['translated_message'] = line.split('-')[1].trim();
                       }
                     }
                   } catch (e) {
@@ -310,6 +325,14 @@ $prompt
         // Rate limit exceeded - implement exponential backoff
         final backoffDelay = Duration(seconds: (1 << retryCount));
         if (retryCount < _maxRetries) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Rate limited. Retrying in ${backoffDelay.inSeconds} seconds... (${retryCount + 1}/$_maxRetries)'),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
           await Future.delayed(backoffDelay);
           return _makeApiRequest(base64Image, language, retryCount: retryCount + 1);
         } else {
@@ -332,6 +355,16 @@ $prompt
       _isAnalyzing = true;
       _scanResult = null;
       _retryCount = 0;
+      // Reset analysis data
+      _infectionLevel = null;
+      _diseaseName = null;
+      _pesticideName = null;
+      _dosage = null;
+      _frequency = null;
+      _precautions = null;
+      cropStatus = "";
+      _infectionPercentage = 0.0;
+      diseaseAlerts = [];
     });
 
     try {
@@ -344,51 +377,97 @@ $prompt
       final parsedJson = await _makeApiRequest(base64Image, _selectedLanguage, retryCount: _retryCount);
 
       if (parsedJson != null && mounted) {
-        setState(() {
-          _infectionLevel = parsedJson['infection_level'];
-          _diseaseName = parsedJson['disease_name'] ?? parsedJson['translated_disease'];
-          _pesticideName = parsedJson['pesticide']?['name'] ?? parsedJson['translated_pesticide'];
-          _dosage = parsedJson['pesticide']?['dosage'];
-          _frequency = parsedJson['pesticide']?['frequency'];
-          _precautions = parsedJson['pesticide']?['precautions'];
+        // Check if the image contains a valid leaf
+        final bool isValidLeaf = parsedJson['valid_leaf'] ?? false;
+        final String? message = parsedJson['message'];
+        
+        if (!isValidLeaf) {
+          // Invalid image - show error message
+          setState(() {
+            _scanResult = message ?? t.invalidImageMessage;
+            _lastImage = imageFile;
+          });
 
-          // Use translated response if available, otherwise use disease name
-          _scanResult = parsedJson['translated_response'] ?? 
-                       parsedJson['translated_disease'] ?? 
-                       (_diseaseName ?? t.unknownDiseaseDetected);
-          _lastImage = imageFile;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                message ?? t.invalidImageMessage,
+                style: const TextStyle(color: Colors.white),
+              ),
+              backgroundColor: Colors.orange,
+              duration: const Duration(seconds: 4),
+              action: SnackBarAction(
+                label: t.tryAgain,
+                textColor: Colors.white,
+                onPressed: () {
+                  setState(() {
+                    _scanResult = null;
+                    _lastImage = null;
+                  });
+                },
+              ),
+            ),
+          );
+        } else {
+          // Valid leaf - process analysis
+          setState(() {
+            _infectionLevel = parsedJson['infection_level'] as int?;
+            _diseaseName = parsedJson['disease_name'] as String? ?? parsedJson['translated_disease'] as String?;
+            _pesticideName = parsedJson['pesticide']?['name'] as String? ?? parsedJson['translated_pesticide'] as String?;
+            _dosage = parsedJson['pesticide']?['dosage'] as String?;
+            _frequency = parsedJson['pesticide']?['frequency'] as String?;
+            _precautions = parsedJson['pesticide']?['precautions'] as String?;
 
-          // Update crop status only after analysis
-          cropStatus = (_infectionLevel! <= 2) ? "healthy" : "unhealthy";
+            // Use translated response if available, otherwise use disease name
+            _scanResult = parsedJson['translated_response'] as String? ?? 
+                         parsedJson['translated_message'] as String? ?? 
+                         parsedJson['translated_disease'] as String? ?? 
+                         (_diseaseName ?? t.unknownDiseaseDetected);
+            
+            _lastImage = imageFile;
 
-          // Update infection percentage (scale 1-5 to 0-1)
-          _infectionPercentage = _infectionLevel! / 5.0;
+            // Only update crop status if infection level is available
+            if (_infectionLevel != null) {
+              cropStatus = (_infectionLevel! <= 2) ? "healthy" : "unhealthy";
+              _infectionPercentage = _infectionLevel! / 5.0;
 
-          // Update disease alerts
-          diseaseAlerts = [
-            {
-              "name": _diseaseName ?? t.unknownDiseaseDetected, 
-              "severity": _levelToSeverity(_infectionLevel ?? 3, t)
-            },
-          ];
-        });
+              // Update disease alerts
+              diseaseAlerts = [
+                {
+                  "name": _diseaseName ?? t.unknownDiseaseDetected, 
+                  "severity": _levelToSeverity(_infectionLevel!, t)
+                },
+              ];
+            }
+          });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(t.analysisCompleteMessage(_diseaseName ?? t.unknownDiseaseDetected)),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 3),
-          ),
-        );
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(t.analysisCompleteMessage(_diseaseName ?? t.unknownDiseaseDetected)),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
       } else if (mounted) {
         setState(() {
           _scanResult = t.couldNotParseAIResponse;
+          _lastImage = imageFile;
         });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(t.couldNotParseAIResponse),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {
         setState(() {
           _scanResult = t.analysisFailedMessage(e.toString());
+          _lastImage = imageFile;
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -417,9 +496,9 @@ $prompt
     final t = AppLocalizations.of(context)!;
     if (_isRateLimited || _isAnalyzing) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please wait before scanning again'),
-          duration: Duration(seconds: 2),
+        SnackBar(
+          content: Text(t.pleaseWaitBeforeScanning),
+          duration: const Duration(seconds: 2),
         ),
       );
       return;
@@ -716,15 +795,23 @@ $prompt
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                           decoration: BoxDecoration(
-                            color: Colors.green.withOpacity(0.1),
+                            color: (_infectionLevel != null) 
+                                ? Colors.green.withOpacity(0.1)
+                                : Colors.orange.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.green.withOpacity(0.3)),
+                            border: Border.all(
+                              color: (_infectionLevel != null) 
+                                  ? Colors.green.withOpacity(0.3)
+                                  : Colors.orange.withOpacity(0.3)
+                            ),
                           ),
                           child: Text(
-                            '${t.detected}! $_scanResult',
+                            _scanResult!,
                             style: GoogleFonts.poppins(
                               fontWeight: FontWeight.w600,
-                              color: Colors.green[800],
+                              color: (_infectionLevel != null) 
+                                  ? Colors.green[800]
+                                  : Colors.orange[800],
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -841,7 +928,7 @@ $prompt
             ),
             SizedBox(height: screenHeight * 0.04),
             
-            // 5. Overall Infection Level - Only show after analysis
+            // 5. Overall Infection Level - Only show after valid analysis
             if (cropStatus.isNotEmpty) ...[
               Container(
                 padding: EdgeInsets.all(screenWidth * 0.04),
@@ -910,7 +997,7 @@ $prompt
               SizedBox(height: screenHeight * 0.03),
             ],
             
-            // 6. Crop Status - Only show after analysis
+            // 6. Crop Status - Only show after valid analysis
             if (cropStatus.isNotEmpty) ...[
               Container(
                 padding: EdgeInsets.all(screenWidth * 0.04),
@@ -961,8 +1048,8 @@ $prompt
               SizedBox(height: screenHeight * 0.03),
             ],
             
-            // 7. Treatment Recommendations - Only show after analysis
-            if (cropStatus.isNotEmpty) ...[
+            // 7. Treatment Recommendations - Only show after valid analysis
+            if (cropStatus.isNotEmpty && _pesticideName != null && _dosage != null && _frequency != null) ...[
               Text(
                 t.treatmentRecommendations,
                 style: GoogleFonts.poppins(
@@ -996,24 +1083,24 @@ $prompt
                       ),
                     ),
                     SizedBox(height: 10),
-                    if (_pesticideName != null && _dosage != null && _frequency != null) ...[
-                      Row(
-                        children: [
-                          Icon(Icons.water_drop, color: AppColors.primaryGreen, size: 20),
-                          SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              t.applyPesticideFormat(_pesticideName!, _dosage!, _frequency!),
-                              style: GoogleFonts.poppins(
-                                fontSize: screenWidth * 0.04,
-                                fontWeight: FontWeight.w500,
-                                color: AppColors.primaryGreen,
-                              ),
+                    Row(
+                      children: [
+                        Icon(Icons.water_drop, color: AppColors.primaryGreen, size: 20),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            t.applyPesticideFormat(_pesticideName!, _dosage!, _frequency!),
+                            style: GoogleFonts.poppins(
+                              fontSize: screenWidth * 0.04,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.primaryGreen,
                             ),
                           ),
-                        ],
-                      ),
-                      SizedBox(height: 8),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8),
+                    if (_precautions != null) ...[
                       Row(
                         children: [
                           Icon(Icons.warning_amber, color: Colors.red, size: 20),
@@ -1029,23 +1116,61 @@ $prompt
                           ),
                         ],
                       ),
-                    ] else ...[
-                      Row(
-                        children: [
-                          Icon(Icons.info_outline, color: Colors.blue, size: 20),
-                          SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              t.inspectAndMonitorDaily,
-                              style: GoogleFonts.poppins(
-                                fontSize: screenWidth * 0.04,
-                                color: Colors.blue[700],
-                              ),
+                    ],
+                  ],
+                ),
+              ),
+              SizedBox(height: screenHeight * 0.02),
+            ] else if (cropStatus.isNotEmpty) ...[
+              // Show generic recommendations when analysis is done but pesticide info is missing
+              Text(
+                t.treatmentRecommendations,
+                style: GoogleFonts.poppins(
+                  fontSize: screenWidth * 0.05,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              SizedBox(height: 10),
+              Container(
+                padding: EdgeInsets.all(screenWidth * 0.04),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(15),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.2),
+                      spreadRadius: 2,
+                      blurRadius: 5,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      t.basedOnCurrentInfection,
+                      style: GoogleFonts.poppins(
+                        fontSize: screenWidth * 0.04,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Icon(Icons.info_outline, color: Colors.blue, size: 20),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            t.inspectAndMonitorDaily,
+                            style: GoogleFonts.poppins(
+                              fontSize: screenWidth * 0.04,
+                              color: Colors.blue[700],
                             ),
                           ),
-                        ],
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),

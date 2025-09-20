@@ -235,7 +235,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get analyzingMessage => 'Analyzing...';
 
   @override
-  String rateLimitedRetryMessage(Object seconds, Object attempt, Object maxRetries) {
+  String rateLimitedRetryMessage(
+    Object seconds,
+    Object attempt,
+    Object maxRetries,
+  ) {
     return 'Rate limited. Retrying in $seconds seconds... ($attempt/$maxRetries)';
   }
 
@@ -268,10 +272,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get highSeverity => 'High';
 
   @override
-  String applyPesticideFormat(Object pesticide, Object dosage, Object frequency) {
+  String applyPesticideFormat(
+    Object pesticide,
+    Object dosage,
+    Object frequency,
+  ) {
     return 'Apply $pesticide at $dosage, $frequency.';
   }
 
   @override
   String get detected => 'Detected';
+
+  @override
+  String get pleaseWaitBeforeScanning => 'Please wait before scanning again';
+
+  @override
+  String get invalidImageMessage =>
+      'The uploaded image does not appear to be a crop leaf. Please upload a clear image of the leaf or crop.';
+
+  @override
+  String get tryAgain => 'Try Again';
 }

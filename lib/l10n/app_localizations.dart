@@ -47,12 +47,12 @@ import 'app_localizations_pa.dart';
 ///
 /// iOS applications define key application metadata, including supported
 /// locales, in an Info.plist file that is built into the application bundle.
-/// To configure the locales supported by your app, you'll need to edit this
+/// To configure the locales supported by your app, you’ll need to edit this
 /// file.
 ///
-/// First, open your project's ios/Runner.xcworkspace Xcode workspace file.
+/// First, open your project’s ios/Runner.xcworkspace Xcode workspace file.
 /// Then, in the Project Navigator, open the Info.plist file under the Runner
-/// project's Runner folder.
+/// project’s Runner folder.
 ///
 /// Next, select the Information Property List item, select Add Item from the
 /// Editor menu, then select Localizations from the pop-up menu.
@@ -536,7 +536,11 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Rate limited. Retrying in {seconds} seconds... ({attempt}/{maxRetries})'**
-  String rateLimitedRetryMessage(Object seconds, Object attempt, Object maxRetries);
+  String rateLimitedRetryMessage(
+    Object seconds,
+    Object attempt,
+    Object maxRetries,
+  );
 
   /// No description provided for @analysisCompleteMessage.
   ///
@@ -586,14 +590,39 @@ abstract class AppLocalizations {
   /// **'High'**
   String get highSeverity;
 
-  /// No description provided for @detected.
-String get detected;
-
   /// No description provided for @applyPesticideFormat.
   ///
   /// In en, this message translates to:
   /// **'Apply {pesticide} at {dosage}, {frequency}.'**
-  String applyPesticideFormat(Object pesticide, Object dosage, Object frequency);
+  String applyPesticideFormat(
+    Object pesticide,
+    Object dosage,
+    Object frequency,
+  );
+
+  /// Label for detected disease in scan results
+  ///
+  /// In en, this message translates to:
+  /// **'Detected'**
+  String get detected;
+
+  /// No description provided for @pleaseWaitBeforeScanning.
+  ///
+  /// In en, this message translates to:
+  /// **'Please wait before scanning again'**
+  String get pleaseWaitBeforeScanning;
+
+  /// No description provided for @invalidImageMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The uploaded image does not appear to be a crop leaf. Please upload a clear image of the leaf or crop.'**
+  String get invalidImageMessage;
+
+  /// No description provided for @tryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try Again'**
+  String get tryAgain;
 }
 
 class _AppLocalizationsDelegate

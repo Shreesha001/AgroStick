@@ -11,6 +11,11 @@
   "logout": "लॉगआउट",
   "profileUpdated": "प्रोफाइल सफलतापूर्वक अपडेट की गई",
   "profileUpdateError": "प्रोफाइल अपडेट करने में त्रुटि: {error}",
+  "@profileUpdateError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "welcome": "स्वागत है!",
   "hi": "नमस्ते",
   "weeklyWeather": "साप्ताहिक मौसम",
@@ -116,9 +121,12 @@
       "dosage": {},
       "frequency": {}
     }
-  }
+  },
   "detected": "पता चला",
   "@detected": {
     "description": "Label for detected disease in scan results"
-  }
+  },
+  "pleaseWaitBeforeScanning": "कृपया स्कैन करने से पहले प्रतीक्षा करें",
+  "invalidImageMessage": "अपलोड की गई छवि फसल के पत्ते जैसी नहीं लगती। कृपया पत्ते या फसल की स्पष्ट छवि अपलोड करें।",
+  "tryAgain": "फिर से प्रयास करें"
 }
