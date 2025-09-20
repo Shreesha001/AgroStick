@@ -627,7 +627,7 @@ $prompt
             
             // 2. Scan Field Section
             Container(
-              padding: EdgeInsets.all(screenWidth * 0.04),
+              padding: EdgeInsets.all(screenWidth * 0.03),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(15),
