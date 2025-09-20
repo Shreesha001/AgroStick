@@ -225,4 +225,50 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get openingSpraySchedule => 'Opening spray schedule...';
+
+  @override
+  String rateLimitedMessage(Object seconds) {
+    return 'Rate limited. Please wait $seconds seconds...';
+  }
+
+  @override
+  String get analyzingMessage => 'Analyzing...';
+
+  @override
+  String rateLimitedRetryMessage(Object seconds, Object attempt, Object maxRetries) {
+    return 'Rate limited. Retrying in $seconds seconds... ($attempt/$maxRetries)';
+  }
+
+  @override
+  String analysisCompleteMessage(Object disease) {
+    return 'Analysis complete: $disease';
+  }
+
+  @override
+  String analysisFailedMessage(Object error) {
+    return 'Analysis failed: $error';
+  }
+
+  @override
+  String get unknownDiseaseDetected => 'Unknown disease detected';
+
+  @override
+  String get couldNotParseAIResponse => 'Could not parse AI response';
+
+  @override
+  String get notAnalyzed => 'Not Analyzed';
+
+  @override
+  String get lowSeverity => 'Low';
+
+  @override
+  String get mediumSeverity => 'Medium';
+
+  @override
+  String get highSeverity => 'High';
+
+  @override
+  String applyPesticideFormat(Object pesticide, Object dosage, Object frequency) {
+    return 'Apply $pesticide at $dosage, $frequency.';
+  }
 }

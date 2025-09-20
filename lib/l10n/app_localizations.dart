@@ -47,12 +47,12 @@ import 'app_localizations_pa.dart';
 ///
 /// iOS applications define key application metadata, including supported
 /// locales, in an Info.plist file that is built into the application bundle.
-/// To configure the locales supported by your app, you’ll need to edit this
+/// To configure the locales supported by your app, you'll need to edit this
 /// file.
 ///
-/// First, open your project’s ios/Runner.xcworkspace Xcode workspace file.
+/// First, open your project's ios/Runner.xcworkspace Xcode workspace file.
 /// Then, in the Project Navigator, open the Info.plist file under the Runner
-/// project’s Runner folder.
+/// project's Runner folder.
 ///
 /// Next, select the Information Property List item, select Add Item from the
 /// Editor menu, then select Localizations from the pop-up menu.
@@ -519,6 +519,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Opening spray schedule...'**
   String get openingSpraySchedule;
+
+  /// No description provided for @rateLimitedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate limited. Please wait {seconds} seconds...'**
+  String rateLimitedMessage(Object seconds);
+
+  /// No description provided for @analyzingMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyzing...'**
+  String get analyzingMessage;
+
+  /// No description provided for @rateLimitedRetryMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate limited. Retrying in {seconds} seconds... ({attempt}/{maxRetries})'**
+  String rateLimitedRetryMessage(Object seconds, Object attempt, Object maxRetries);
+
+  /// No description provided for @analysisCompleteMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Analysis complete: {disease}'**
+  String analysisCompleteMessage(Object disease);
+
+  /// No description provided for @analysisFailedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Analysis failed: {error}'**
+  String analysisFailedMessage(Object error);
+
+  /// No description provided for @unknownDiseaseDetected.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown disease detected'**
+  String get unknownDiseaseDetected;
+
+  /// No description provided for @couldNotParseAIResponse.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not parse AI response'**
+  String get couldNotParseAIResponse;
+
+  /// No description provided for @notAnalyzed.
+  ///
+  /// In en, this message translates to:
+  /// **'Not Analyzed'**
+  String get notAnalyzed;
+
+  /// No description provided for @lowSeverity.
+  ///
+  /// In en, this message translates to:
+  /// **'Low'**
+  String get lowSeverity;
+
+  /// No description provided for @mediumSeverity.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get mediumSeverity;
+
+  /// No description provided for @highSeverity.
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get highSeverity;
+
+  /// No description provided for @applyPesticideFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply {pesticide} at {dosage}, {frequency}.'**
+  String applyPesticideFormat(Object pesticide, Object dosage, Object frequency);
 }
 
 class _AppLocalizationsDelegate

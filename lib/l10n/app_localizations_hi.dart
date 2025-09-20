@@ -226,4 +226,50 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get openingSpraySchedule => 'स्प्रे शेड्यूल खोल रहे हैं...';
+
+  @override
+  String rateLimitedMessage(Object seconds) {
+    return 'रेट सीमित। कृपया $seconds सेकंड प्रतीक्षा करें...';
+  }
+
+  @override
+  String get analyzingMessage => 'विश्लेषण कर रहे हैं...';
+
+  @override
+  String rateLimitedRetryMessage(Object seconds, Object attempt, Object maxRetries) {
+    return 'रेट सीमित। $seconds सेकंड में पुनः प्रयास कर रहे हैं... ($attempt/$maxRetries)';
+  }
+
+  @override
+  String analysisCompleteMessage(Object disease) {
+    return 'विश्लेषण पूरा: $disease';
+  }
+
+  @override
+  String analysisFailedMessage(Object error) {
+    return 'विश्लेषण विफल: $error';
+  }
+
+  @override
+  String get unknownDiseaseDetected => 'अज्ञात रोग का पता चला';
+
+  @override
+  String get couldNotParseAIResponse => 'AI प्रतिक्रिया पार्स नहीं हो सकी';
+
+  @override
+  String get notAnalyzed => 'विश्लेषण नहीं किया गया';
+
+  @override
+  String get lowSeverity => 'कम';
+
+  @override
+  String get mediumSeverity => 'मध्यम';
+
+  @override
+  String get highSeverity => 'उच्च';
+
+  @override
+  String applyPesticideFormat(Object pesticide, Object dosage, Object frequency) {
+    return '$pesticide को $dosage पर, $frequency।';
+  }
 }
