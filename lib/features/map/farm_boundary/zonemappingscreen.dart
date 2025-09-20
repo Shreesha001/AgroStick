@@ -479,4 +479,77 @@ class _ZoneMappingScreenState extends State<ZoneMappingScreen> {
                           borderRadius: BorderRadius.circular(4),
                         ),
                       ),
-                      const SizedBox(width
+                      const SizedBox(width: 8),
+                      Text(
+                        'Pending (${_totalZones - _visitedZones.length})',
+                        style: GoogleFonts.poppins(fontSize: 14),
+                      ),
+                    ],
+                  ),
+                  
+                  // NEW: Progress bar
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Text(
+                        'Progress: ',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Expanded(
+                        child: LinearProgressIndicator(
+                          value: _totalZones > 0 ? _visitedZones.length / _totalZones : 0,
+                          backgroundColor: Colors.grey[300],
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            completionPercentage == 100 ? Colors.green : Colors.blue,
+                          ),
+                          minHeight: 8,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '$completionPercentage%',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: completionPercentage == 100 ? Colors.green : Colors.blue,
+                        ),
+                      ),
+                    ],
+                  ),
+                  
+                  // NEW: Completion message
+                  if (completionPercentage == 100)
+                    Container(
+                      margin: const EdgeInsets.only(top: 12),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.green, width: 1),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.check_circle, color: Colors.green, size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Congratulations! All zones completed!',
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.green[700],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
