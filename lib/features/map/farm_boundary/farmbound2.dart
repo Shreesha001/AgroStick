@@ -12,14 +12,14 @@ import 'dart:typed_data';
 import 'dart:ui' as ui; // Added for screenshot functionality
 import 'package:flutter/rendering.dart'; // Added for RepaintBoundary
 
-class FarmBoundaryScreen extends StatefulWidget {
-  const FarmBoundaryScreen({super.key});
+class FarmBoundaryScreen2 extends StatefulWidget {
+  const FarmBoundaryScreen2({super.key});
 
   @override
-  _FarmBoundaryScreenState createState() => _FarmBoundaryScreenState();
+  _FarmBoundaryScreenState2 createState() => _FarmBoundaryScreenState2();
 }
 
-class _FarmBoundaryScreenState extends State<FarmBoundaryScreen> {
+class _FarmBoundaryScreenState2 extends State<FarmBoundaryScreen2> {
   late GoogleMapController mapController;
   bool _mapReady = false;
   final List<LatLng> _boundaryPoints = [];

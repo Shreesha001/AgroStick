@@ -51,8 +51,3 @@ flutter {
     source = "../.."
 }
 
-dependencies {
-    // Include TensorFlow Lite GPU delegate and optional Select TF Ops matching tflite_flutter
-    implementation("org.tensorflow:tensorflow-lite-gpu:2.14.0")
-    implementation("org.tensorflow:tensorflow-lite-select-tf-ops:2.14.0")
-}

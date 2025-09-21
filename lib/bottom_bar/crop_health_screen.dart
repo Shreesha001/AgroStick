@@ -1,3 +1,4 @@
+import 'package:agro_stick/features/map/farm_boundary/farmbound2.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:agro_stick/theme/colors.dart';
@@ -169,7 +170,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const FarmBoundaryScreen(),
+        builder: (context) => const FarmBoundaryScreen2(),
       ),
     );
   }

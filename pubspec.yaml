@@ -51,7 +51,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   intl: ^0.20.2
-  tflite_flutter: 0.11.0
+  # tflite_flutter: 0.11.0
   image: ^4.2.0
   flutter_dotenv: ^5.1.0
   google_generative_ai: ^0.4.7
@@ -86,9 +86,7 @@ flutter:
     - assets/logo.png
     - assets/google_logo.png
     - assets/crop_image.jpg
-    - assets/chatbot_img.png
-    - lib/model/plant_disease_model.tflite
-    - lib/features/blog/models/classes.json
+    - assets/chatbot_img.png 
     - .env
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
