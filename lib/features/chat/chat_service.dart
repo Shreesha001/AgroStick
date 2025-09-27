@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../../secrets.dart';
 
 class ChatService {
-  static const String _model = 'gemini-1.5-flash';
+  static const String _model = 'gemini-2.5-flash';
 
   static Future<String> getReply(String prompt) async {
     if (geminiApiKey.isEmpty) {

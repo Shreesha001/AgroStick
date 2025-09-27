@@ -39,7 +39,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
 
   // Rate limiting
   DateTime? _lastRequestTime;
-  static const Duration _rateLimitDelay = Duration(seconds: 5);
+  static const Duration _rateLimitDelay = Duration(seconds: 10); // Increased for safety
   static const int _maxRetries = 3;
   int _retryCount = 0;
 
@@ -53,13 +53,12 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
   @override
   void initState() {
     super.initState();
-    _selectedLanguage = _getLanguageFromProfile(); // Get from profile/settings
+    _selectedLanguage = _getLanguageFromProfile();
   }
 
-  // Get language from profile/settings (you'll need to implement this)
+  // Get language from profile/settings
   String _getLanguageFromProfile() {
     // TODO: Implement language retrieval from shared preferences or profile
-    // For now, returning 'en'
     return 'en';
   }
 
@@ -68,12 +67,15 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
     final t = AppLocalizations.of(context)!;
     if (_lastRequestTime == null) {
       _lastRequestTime = DateTime.now();
+      debugPrint("Rate limit: First request, proceeding.");
       return true;
     }
 
     final timeSinceLastRequest = DateTime.now().difference(_lastRequestTime!);
+    debugPrint("Time since last request: ${timeSinceLastRequest.inSeconds} seconds");
     if (timeSinceLastRequest < _rateLimitDelay) {
       final waitTime = _rateLimitDelay - timeSinceLastRequest;
+      debugPrint("Rate limit hit, waiting for ${waitTime.inSeconds} seconds");
       if (mounted) {
         setState(() {
           _isRateLimited = true;
@@ -95,6 +97,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
     }
 
     _lastRequestTime = DateTime.now();
+    debugPrint("Rate limit: Cleared, proceeding.");
     return true;
   }
 
@@ -143,20 +146,24 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
 
   void _startSpray(BuildContext context) {
     final t = AppLocalizations.of(context)!;
-    setState(() {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(t.startingPesticideSpray)),
-      );
-    });
+    if (mounted) {
+      setState(() {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(t.startingPesticideSpray)),
+        );
+      });
+    }
   }
 
   void _stopSpray(BuildContext context) {
     final t = AppLocalizations.of(context)!;
-    setState(() {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(t.stoppingPesticideSpray)),
-      );
-    });
+    if (mounted) {
+      setState(() {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(t.stoppingPesticideSpray)),
+        );
+      });
+    }
   }
 
   void _scheduleSpray(BuildContext context) {
@@ -175,14 +182,30 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
     );
   }
 
-  Future<Map<String, dynamic>?> _makeApiRequest(String base64Image, String language, {int retryCount = 0}) async {
+  Future<Map<String, dynamic>?> _makeApiRequest(
+    String base64Image,
+    String language, {
+    int retryCount = 0,
+  }) async {
+    if (retryCount > 0 && mounted) {
+      final t = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+         content: Text('Retry attempt: $retryCount'),
+
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+
     try {
       String prompt = """
 You are an expert plant pathologist and agricultural advisor.
 
 Analyze the uploaded plant leaf image and provide:
 1. Verify if the image contains a plant leaf relevant to crops.
-   - If it is not a leaf or is unrelated, respond with a clear message to the user like: "The uploaded image does not appear to be a crop leaf. Please upload a clear image of the leaf or crop."
+   - If it is not a leaf or is unrelated, respond with a clear message to the user like: 
+     "The uploaded image does not appear to be a crop leaf. Please upload a clear image of the leaf or crop."
 2. If it is a valid leaf, provide:
    - Infection level on a scale of 1 (healthy) to 5 (severely infected)
    - Type of infection/disease
@@ -195,7 +218,7 @@ Analyze the uploaded plant leaf image and provide:
 Always respond in JSON format like:
 
 {
-  "valid_leaf": true,  // false if not a leaf
+  "valid_leaf": true,
   "infection_level": 3,
   "disease_name": "Early Blight",
   "pesticide": {
@@ -206,20 +229,11 @@ Always respond in JSON format like:
   },
   "message": "Optional guidance message for the user"
 }
-
-Notes:
-- If the image is invalid (not a leaf), set "valid_leaf" to false and provide a message in "message".
-- If the image is valid, set "valid_leaf" to true and fill the infection, disease, and pesticide fields.
 """;
 
-      // Add language context for Gemini response translation
       if (language != 'en') {
-        final languageMap = {
-          'hi': 'Hindi',
-          'pa': 'Punjabi',
-        };
+        final languageMap = {'hi': 'Hindi', 'pa': 'Punjabi'};
         final targetLanguage = languageMap[language] ?? 'English';
-        
         prompt = """
 First, provide the analysis in English JSON format as specified.
 Then, translate the disease name, pesticide name, dosage, frequency, precautions, and user message to $targetLanguage.
@@ -227,30 +241,15 @@ Then, translate the disease name, pesticide name, dosage, frequency, precautions
 Respond with:
 1. JSON analysis (in English)
 2. TRANSLATED_RESPONSE: [translated disease name, recommendations, and message in $targetLanguage]
-
-Example:
-{
-  "valid_leaf": true,
-  "infection_level": 3,
-  "disease_name": "Early Blight",
-  "pesticide": {
-    "name": "Mancozeb",
-    "dosage": "2.5 kg/ha",
-    "frequency": "Every 10 days",
-    "precautions": "Wear gloves and mask"
-  },
-  "message": "The crop shows moderate infection"
-}
-TRANSLATED_RESPONSE: बीमारी - प्रारंभिक झुलसा; दवा - मैनकोजेब; खुराक - 2.5 किलो/हेक्टेयर; आवृत्ति - हर 10 दिन; सावधानियां - दस्ताने और मास्क पहनें; संदेश - फसल में मध्यम संक्रमण दिख रहा है
-
-$prompt
 """;
       }
 
-      final url = Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$geminiApiKey');
-      final headers = {
-        'Content-Type': 'application/json',
-      };
+      final url = Uri.parse(
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$geminiApiKey',
+      );
+
+      final headers = {'Content-Type': 'application/json'};
+
       final body = jsonEncode({
         "contents": [
           {
@@ -259,91 +258,67 @@ $prompt
               {
                 "inline_data": {
                   "mime_type": "image/jpeg",
-                  "data": base64Image
+                  "data": base64Image,
                 }
               }
             ]
           }
-        ],
-        "generationConfig": {
-          "temperature": 0.7,
-          "topK": 40,
-          "topP": 0.95,
-          "maxOutputTokens": 1024,
-        }
+        ]
       });
 
       final response = await http.post(url, headers: headers, body: body);
 
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body);
-        if (jsonResponse['candidates'] != null && jsonResponse['candidates'].isNotEmpty) {
-          final content = jsonResponse['candidates'][0]['content']['parts'][0]['text'];
-          
-          // Extract JSON from the response
-          final jsonMatch = RegExp(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}').firstMatch(content);
-          if (jsonMatch != null) {
-            final jsonString = jsonMatch.group(0);
-            if (jsonString != null) {
-              final result = jsonDecode(jsonString);
-              
-              // Extract translated response if available
-              String? translatedResponse;
-              if (language != 'en') {
-                final translatedMatch = RegExp(r'TRANSLATED_RESPONSE:\s*(.*)', dotAll: true).firstMatch(content);
-                if (translatedMatch != null) {
-                  translatedResponse = translatedMatch.group(1)?.trim();
-                }
-                
-                // Parse translated fields if available
-                if (translatedResponse != null) {
-                  try {
-                    // Simple parsing - you might need more sophisticated parsing based on your response format
-                    final lines = translatedResponse.split(';');
-                    for (String line in lines) {
-                      line = line.trim();
-                      if (line.toLowerCase().contains('बीमारी') || line.toLowerCase().contains('disease')) {
-                        result['translated_disease'] = line.split('-')[1].trim();
-                      } else if (line.toLowerCase().contains('दवा') || line.toLowerCase().contains('pesticide')) {
-                        result['translated_pesticide'] = line.split('-')[1].trim();
-                      } else if (line.toLowerCase().contains('संदेश') || line.toLowerCase().contains('message')) {
-                        result['translated_message'] = line.split('-')[1].trim();
-                      }
-                    }
-                  } catch (e) {
-                    // Fallback to full translated response
-                    result['translated_response'] = translatedResponse;
-                  }
-                }
-              }
-              
-              return result;
+
+        if (jsonResponse['candidates'] != null &&
+            jsonResponse['candidates'].isNotEmpty &&
+            jsonResponse['candidates'][0]['content'] != null &&
+            jsonResponse['candidates'][0]['content']['parts'] != null &&
+            jsonResponse['candidates'][0]['content']['parts'].isNotEmpty &&
+            jsonResponse['candidates'][0]['content']['parts'][0]['text'] != null) {
+          final rawText = jsonResponse['candidates'][0]['content']['parts'][0]['text'];
+          debugPrint("Gemini raw response: $rawText");
+
+          try {
+            // Clean the response by removing ```json and ``` markers
+            String cleanedText = rawText
+                .replaceAll(RegExp(r'^```json\s*|\s*```$', multiLine: true), '')
+                .trim();
+            final parsedJson = jsonDecode(cleanedText);
+
+            // Validate that parsedJson is a Map
+            if (parsedJson is Map<String, dynamic>) {
+              return parsedJson;
+            } else {
+              throw Exception("Parsed response is not a valid JSON object");
             }
+          } catch (e) {
+            debugPrint("Error parsing JSON: $e");
+            return {
+              "valid_leaf": false,
+              "message": "Could not parse AI response. Please try again."
+            };
           }
-        }
-        return null;
-      } else if (response.statusCode == 429) {
-        // Rate limit exceeded - implement exponential backoff
-        final backoffDelay = Duration(seconds: (1 << retryCount));
-        if (retryCount < _maxRetries) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Rate limited. Retrying in ${backoffDelay.inSeconds} seconds... (${retryCount + 1}/$_maxRetries)'),
-                duration: const Duration(seconds: 2),
-              ),
-            );
-          }
-          await Future.delayed(backoffDelay);
-          return _makeApiRequest(base64Image, language, retryCount: retryCount + 1);
         } else {
-          throw Exception('Max retries exceeded due to rate limiting');
+          throw Exception("Invalid API response structure: ${response.body}");
         }
       } else {
-        throw Exception('API Error: ${response.statusCode} - ${response.body}');
+        debugPrint("API error ${response.statusCode}: ${response.body}");
+        throw Exception("API Error: ${response.statusCode}");
       }
     } catch (e) {
-      throw Exception('Request failed: $e');
+      debugPrint("Exception in _makeApiRequest: $e");
+
+      // Retry with backoff
+      if (retryCount < _maxRetries) {
+        await Future.delayed(Duration(seconds: 2 * (retryCount + 1)));
+        return _makeApiRequest(base64Image, language, retryCount: retryCount + 1);
+      }
+      return {
+        "valid_leaf": false,
+        "message": "Failed after multiple attempts. Please try again later."
+      };
     }
   }
 
@@ -352,21 +327,23 @@ $prompt
     final canProceed = await _checkRateLimit(context);
     if (!canProceed) return;
 
-    setState(() {
-      _isAnalyzing = true;
-      _scanResult = null;
-      _retryCount = 0;
-      // Reset analysis data
-      _infectionLevel = null;
-      _diseaseName = null;
-      _pesticideName = null;
-      _dosage = null;
-      _frequency = null;
-      _precautions = null;
-      cropStatus = "";
-      _infectionPercentage = 0.0;
-      diseaseAlerts = [];
-    });
+    if (mounted) {
+      setState(() {
+        _isAnalyzing = true;
+        _scanResult = null;
+        _retryCount = 0;
+        // Reset analysis data
+        _infectionLevel = null;
+        _diseaseName = null;
+        _pesticideName = null;
+        _dosage = null;
+        _frequency = null;
+        _precautions = null;
+        cropStatus = "";
+        _infectionPercentage = 0.0;
+        diseaseAlerts = [];
+      });
+    }
 
     try {
       final bytes = await File(imageFile.path).readAsBytes();
@@ -381,13 +358,15 @@ $prompt
         // Check if the image contains a valid leaf
         final bool isValidLeaf = parsedJson['valid_leaf'] ?? false;
         final String? message = parsedJson['message'];
-        
+
         if (!isValidLeaf) {
           // Invalid image - show error message
-          setState(() {
-            _scanResult = message ?? t.invalidImageMessage;
-            _lastImage = imageFile;
-          });
+          if (mounted) {
+            setState(() {
+              _scanResult = message ?? t.invalidImageMessage;
+              _lastImage = imageFile;
+            });
+          }
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -401,46 +380,52 @@ $prompt
                 label: t.tryAgain,
                 textColor: Colors.white,
                 onPressed: () {
-                  setState(() {
-                    _scanResult = null;
-                    _lastImage = null;
-                  });
+                  if (mounted) {
+                    setState(() {
+                      _scanResult = null;
+                      _lastImage = null;
+                    });
+                  }
                 },
               ),
             ),
           );
         } else {
           // Valid leaf - process analysis
-          setState(() {
-            _infectionLevel = parsedJson['infection_level'] as int?;
-            _diseaseName = parsedJson['disease_name'] as String? ?? parsedJson['translated_disease'] as String?;
-            _pesticideName = parsedJson['pesticide']?['name'] as String? ?? parsedJson['translated_pesticide'] as String?;
-            _dosage = parsedJson['pesticide']?['dosage'] as String?;
-            _frequency = parsedJson['pesticide']?['frequency'] as String?;
-            _precautions = parsedJson['pesticide']?['precautions'] as String?;
+          if (mounted) {
+            setState(() {
+              _infectionLevel = parsedJson['infection_level'] as int?;
+              _diseaseName = parsedJson['disease_name'] as String? ?? parsedJson['translated_disease'] as String?;
+              _pesticideName = parsedJson['pesticide']?['name'] as String? ?? parsedJson['translated_pesticide'] as String?;
+              _dosage = parsedJson['pesticide']?['dosage'] as String?;
+              _frequency = parsedJson['pesticide']?['frequency'] as String?;
+              _precautions = parsedJson['pesticide']?['precautions'] as String?;
 
-            // Use translated response if available, otherwise use disease name
-            _scanResult = parsedJson['translated_response'] as String? ?? 
-                         parsedJson['translated_message'] as String? ?? 
-                         parsedJson['translated_disease'] as String? ?? 
-                         (_diseaseName ?? t.unknownDiseaseDetected);
-            
-            _lastImage = imageFile;
+              // Prioritize translated fields for scan result
+              _scanResult = parsedJson['translated_response'] as String? ??
+                  parsedJson['translated_message'] as String? ??
+                  parsedJson['translated_disease'] as String? ??
+                  (_diseaseName ?? t.unknownDiseaseDetected);
 
-            // Only update crop status if infection level is available
-            if (_infectionLevel != null) {
-              cropStatus = (_infectionLevel! <= 2) ? "healthy" : "unhealthy";
-              _infectionPercentage = _infectionLevel! / 5.0;
+              _lastImage = imageFile;
 
-              // Update disease alerts
-              diseaseAlerts = [
-                {
-                  "name": _diseaseName ?? t.unknownDiseaseDetected, 
-                  "severity": _levelToSeverity(_infectionLevel!, t)
-                },
-              ];
-            }
-          });
+              // Only update crop status if infection level is valid
+              if (_infectionLevel != null && _infectionLevel! >= 1 && _infectionLevel! <= 5) {
+                cropStatus = (_infectionLevel! <= 2) ? "healthy" : "unhealthy";
+                _infectionPercentage = _infectionLevel! / 5.0;
+                diseaseAlerts = [
+                  {
+                    "name": _diseaseName ?? t.unknownDiseaseDetected,
+                    "severity": _levelToSeverity(_infectionLevel!, t)
+                  },
+                ];
+              } else {
+                cropStatus = "";
+                _infectionPercentage = 0.0;
+                diseaseAlerts = [];
+              }
+            });
+          }
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -455,7 +440,7 @@ $prompt
           _scanResult = t.couldNotParseAIResponse;
           _lastImage = imageFile;
         });
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(t.couldNotParseAIResponse),
@@ -608,7 +593,6 @@ $prompt
     }
   }
 
-  // Get progress bar color based on percentage
   Color _getProgressColor(double percentage) {
     if (percentage <= 0.3) {
       return Colors.green;
@@ -704,7 +688,7 @@ $prompt
               ),
             ),
             SizedBox(height: screenHeight * 0.04),
-            
+
             // 2. Scan Field Section
             Container(
               padding: EdgeInsets.all(screenWidth * 0.03),
@@ -749,7 +733,7 @@ $prompt
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: (_isAnalyzing || _isRateLimited) ? null : () => _scanField(context),
-                      icon: _isAnalyzing 
+                      icon: _isAnalyzing
                           ? SizedBox(
                               width: 20,
                               height: 20,
@@ -760,8 +744,8 @@ $prompt
                             )
                           : Icon(Icons.camera_alt, size: 20),
                       label: Text(
-                        _isAnalyzing 
-                            ? t.analyzingMessage 
+                        _isAnalyzing
+                            ? t.analyzingMessage
                             : (_isRateLimited ? t.rateLimitedMessage(2) : t.fieldScan),
                         style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
                       ),
@@ -796,21 +780,21 @@ $prompt
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                           decoration: BoxDecoration(
-                            color: (_infectionLevel != null) 
+                            color: (_infectionLevel != null)
                                 ? Colors.green.withOpacity(0.1)
                                 : Colors.orange.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: (_infectionLevel != null) 
+                              color: (_infectionLevel != null)
                                   ? Colors.green.withOpacity(0.3)
-                                  : Colors.orange.withOpacity(0.3)
+                                  : Colors.orange.withOpacity(0.3),
                             ),
                           ),
                           child: Text(
                             _scanResult!,
                             style: GoogleFonts.poppins(
                               fontWeight: FontWeight.w600,
-                              color: (_infectionLevel != null) 
+                              color: (_infectionLevel != null)
                                   ? Colors.green[800]
                                   : Colors.orange[800],
                             ),
@@ -823,7 +807,7 @@ $prompt
               ),
             ),
             SizedBox(height: screenHeight * 0.04),
-            
+
             // 3. Quick Actions
             Text(
               t.quickActions,
@@ -909,7 +893,7 @@ $prompt
               ),
             ),
             SizedBox(height: screenHeight * 0.04),
-            
+
             // 4. Humidity and Soil Condition Cards
             Text(
               t.environmentalConditions,
@@ -928,9 +912,9 @@ $prompt
               ],
             ),
             SizedBox(height: screenHeight * 0.04),
-            
+
             // 5. Overall Infection Level - Only show after valid analysis
-            if (cropStatus.isNotEmpty) ...[
+            if (cropStatus.isNotEmpty && _infectionLevel != null) ...[
               Container(
                 padding: EdgeInsets.all(screenWidth * 0.04),
                 decoration: BoxDecoration(
@@ -997,9 +981,9 @@ $prompt
               ),
               SizedBox(height: screenHeight * 0.03),
             ],
-            
+
             // 6. Crop Status - Only show after valid analysis
-            if (cropStatus.isNotEmpty) ...[
+            if (cropStatus.isNotEmpty && _infectionLevel != null) ...[
               Container(
                 padding: EdgeInsets.all(screenWidth * 0.04),
                 decoration: BoxDecoration(
@@ -1048,7 +1032,7 @@ $prompt
               ),
               SizedBox(height: screenHeight * 0.03),
             ],
-            
+
             // 7. Treatment Recommendations - Only show after valid analysis
             if (cropStatus.isNotEmpty && _pesticideName != null && _dosage != null && _frequency != null) ...[
               Text(
@@ -1122,7 +1106,7 @@ $prompt
                 ),
               ),
               SizedBox(height: screenHeight * 0.02),
-            ] else if (cropStatus.isNotEmpty) ...[
+            ] else if (cropStatus.isNotEmpty && _infectionLevel != null) ...[
               // Show generic recommendations when analysis is done but pesticide info is missing
               Text(
                 t.treatmentRecommendations,
