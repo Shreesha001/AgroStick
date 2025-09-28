@@ -42,7 +42,7 @@ The system is designed with rural usability in mind:
   </div>
   <div style="flex: 1;">
     <img src="assets/screenshots/crop-health.jpeg" alt="Crop Health Screen" width="300"/>
-    <img src="assets/screenshots/crop-health-1.jpeg" alt="Crop Health Screen" width="300"/>
+    <img src="assets/screenshots/crop-health-2.jpeg" alt="Crop Health Screen" width="300"/>
   </div>
 </div>
 
