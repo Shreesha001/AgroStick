@@ -22,7 +22,7 @@ The system is designed with rural usability in mind:
   </div>
   <div style="flex: 1; display: flex; gap: 10px;">
     <img src="assets/screenshots/home-page.jpeg" alt="Home Screen" style="width: 30%; height: auto;"/>
-    <img src="assets/screenshots/home-page-2.jpeg" alt="Home Screen 2" style="width: 30%; height: auto;"/>
+    <img src="assets/screenshots/home-page-1.jpeg" alt="Home Screen 2" style="width: 30%; height: auto;"/>
     <!-- <img src="assets/screenshots/home3.png" alt="Home Screen 3" style="width: 30%; height: auto;"/> -->
   </div>
 </div>
@@ -42,7 +42,7 @@ The system is designed with rural usability in mind:
   </div>
   <div style="flex: 1;">
     <img src="assets/screenshots/crop-health.jpeg" alt="Crop Health Screen" width="300"/>
-    <img src="assets/screenshots/crop-health-2.jpeg" alt="Crop Health Screen" width="300"/>
+    <img src="assets/screenshots/crop-health-1.jpeg" alt="Crop Health Screen" width="300"/>
   </div>
 </div>
 
@@ -87,7 +87,7 @@ The system is designed with rural usability in mind:
     </ul>
   </div>
   <div style="flex: 1;">
-    <img src="assets/screenshots/chatbot.jpeg_" alt="Chatbot Screen" width="300"/>
+    <img src="assets/screenshots/chatbot.jpeg" alt="Chatbot Screen" width="300"/>
   </div>
 </div>
 
