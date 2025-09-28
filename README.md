@@ -97,8 +97,8 @@ The system is designed with rural usability in mind:
 
 - **Frontend**: Flutter (cross-platform mobile development)  
 - **Backend**: Firebase (authentication, data sync, history storage)  
-- **Hardware**: ESP32 microcontroller, ESP32-CAM, DHT11 + Soil Moisture Sensors  
-- **ML Model**: MobileNetV2 for lightweight crop disease detection  
+- **Hardware**:  
+- **ML Model**: 
 - **Deployment**: Android App Bundle (AAB) for optimized delivery  
 
 ---
@@ -112,29 +112,8 @@ The system is designed with rural usability in mind:
 
 ---
 
-## Project Structure
 
-```
-AgroStick/
-│── lib/                # Flutter app source code
-│── assets/             # Screenshots, images, icons
-│── hardware/           # ESP32 + sensor firmware
-│── models/             # ML models
-│── docs/               # Documentation
-│── README.md           # This file
-```
-
----
-
-## References
-
-- Deep Learning in Agriculture Survey (2018)  
-- Precision Agriculture in Practice (2020)  
-- Efficient Model for Plant Disease Detection (2025)  
-
----
-
+<!-- 
 ## Links
 
-- GitHub Repository: [AgroStick](https://github.com/Shreesha001/AgroStick/)  
-- Documentation: See `docs/SIH2025015_SynergySix-1.pdf`  
+- Documentation: See `docs/SIH2025015_SynergySix-1.pdf`   -->
