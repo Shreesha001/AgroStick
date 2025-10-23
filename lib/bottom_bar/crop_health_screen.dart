@@ -177,7 +177,7 @@ class _CropHealthScreenState extends State<CropHealthScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const FarmBoundaryScreen2(),
+        builder: (context) => const FarmBoundaryScreen(),
       ),
     );
   }
