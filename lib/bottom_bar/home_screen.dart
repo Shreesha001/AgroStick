@@ -1,3 +1,4 @@
+import 'package:agro_stick/bottom_bar/drawer/drawer_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -9,6 +10,7 @@ import 'package:agro_stick/features/blog/screens/blog_list_screen.dart';
 import 'package:agro_stick/features/blog/screens/blog_content_screen.dart';
 import 'package:agro_stick/features/weather/weather_service.dart';
 import 'package:location/location.dart' as loc;
+ 
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -26,10 +28,10 @@ class _HomeScreenState extends State<HomeScreen> {
   List<DailyForecast> _forecast = [];
   bool _loadingWeather = false;
   String? _weatherError;
-  
+
   // Blog data
   List<BlogModel> _featuredBlogs = [];
-  
+
   // Location instance
   final loc.Location _location = loc.Location();
 
@@ -46,7 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadWeather() async {
-    if (!mounted) return; // Check if widget is still mounted before starting
+    if (!mounted) return;
     setState(() {
       _loadingWeather = true;
       _weatherError = null;
@@ -62,14 +64,16 @@ class _HomeScreenState extends State<HomeScreen> {
       loc.PermissionStatus permissionGranted = await _location.hasPermission();
       if (permissionGranted == loc.PermissionStatus.denied) {
         permissionGranted = await _location.requestPermission();
-        if (permissionGranted != loc.PermissionStatus.granted && permissionGranted != loc.PermissionStatus.grantedLimited) {
+        if (permissionGranted != loc.PermissionStatus.granted &&
+            permissionGranted != loc.PermissionStatus.grantedLimited) {
           throw Exception('Location permission denied');
         }
       }
 
       double lat = 12.9716; // fallback: Bengaluru
       double lng = 77.5946;
-      if (permissionGranted == loc.PermissionStatus.granted || permissionGranted == loc.PermissionStatus.grantedLimited) {
+      if (permissionGranted == loc.PermissionStatus.granted ||
+          permissionGranted == loc.PermissionStatus.grantedLimited) {
         final current = await _location.getLocation();
         if (current.latitude != null && current.longitude != null) {
           lat = current.latitude!;
@@ -78,19 +82,19 @@ class _HomeScreenState extends State<HomeScreen> {
       }
 
       final data = await WeatherService.fetch7DayForecast(latitude: lat, longitude: lng);
-      if (mounted) { // Check if widget is still mounted before updating state
+      if (mounted) {
         setState(() {
           _forecast = data;
         });
       }
     } catch (e) {
-      if (mounted) { // Check if widget is still mounted before updating state
+      if (mounted) {
         setState(() {
           _weatherError = AppLocalizations.of(context)?.weatherUnavailable ?? 'Weather unavailable';
         });
       }
     } finally {
-      if (mounted) { // Check if widget is still mounted before updating state
+      if (mounted) {
         setState(() {
           _loadingWeather = false;
         });
@@ -100,7 +104,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
-    // No need to cancel location updates explicitly unless using a stream subscription
     super.dispose();
   }
 
@@ -202,7 +205,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget dataCard(String title, String value, Color color, IconData icon, double screenWidth, AppLocalizations t) {
     return Container(
-      width: (screenWidth - 60) / 2, // 2 cards per row with spacing
+      width: (screenWidth - 60) / 2,
       padding: EdgeInsets.all(screenWidth * 0.04),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -220,7 +223,7 @@ class _HomeScreenState extends State<HomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(icon, color: color, size: screenWidth * 0.08),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           Text(
             title,
             style: GoogleFonts.poppins(
@@ -228,7 +231,7 @@ class _HomeScreenState extends State<HomeScreen> {
               color: Colors.grey,
             ),
           ),
-          SizedBox(height: 5),
+          const SizedBox(height: 5),
           Text(
             value,
             style: GoogleFonts.poppins(
@@ -244,7 +247,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildBlogCard(BlogModel blog, double screenWidth) {
     return Container(
-      width: screenWidth * 0.8, // 80% of screen width
+      width: screenWidth * 0.8,
       margin: const EdgeInsets.only(right: 16),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -271,7 +274,6 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Blog Image
             ClipRRect(
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(12),
@@ -297,14 +299,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            
-            // Blog Content
             Padding(
               padding: const EdgeInsets.all(12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Category
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
@@ -320,10 +319,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   ),
-                  
                   const SizedBox(height: 8),
-                  
-                  // Title
                   Text(
                     blog.title,
                     style: GoogleFonts.poppins(
@@ -334,10 +330,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  
                   const SizedBox(height: 6),
-                  
-                  // Excerpt
                   Text(
                     blog.excerpt,
                     style: GoogleFonts.poppins(
@@ -348,19 +341,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  
                   const SizedBox(height: 8),
-                  
-                  // Author and Read Time
                   Row(
                     children: [
                       CircleAvatar(
                         radius: 8,
                         backgroundColor: Colors.grey[300],
                         backgroundImage: NetworkImage(blog.authorImage),
-                        onBackgroundImageError: (exception, stackTrace) {
-                          // Handle image error
-                        },
+                        onBackgroundImageError: (exception, stackTrace) {},
                         child: blog.authorImage.isEmpty
                             ? Icon(Icons.person, size: 12, color: Colors.grey[600])
                             : null,
@@ -379,18 +367,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       Row(
                         children: [
-                          Icon(
-                            Icons.access_time,
-                            size: 10,
-                            color: Colors.grey[600],
-                          ),
+                          Icon(Icons.access_time, size: 10, color: Colors.grey[600]),
                           const SizedBox(width: 2),
                           Text(
                             '${blog.readTime}m',
-                            style: GoogleFonts.poppins(
-                              fontSize: 10,
-                              color: Colors.grey[600],
-                            ),
+                            style: GoogleFonts.poppins(fontSize: 10, color: Colors.grey[600]),
                           ),
                         ],
                       ),
@@ -412,143 +393,136 @@ class _HomeScreenState extends State<HomeScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    final greeting = user != null 
-        ? '${t.hi}, ${user.email?.split("@")[0]}!' 
+    final greeting = user != null
+        ? '${t.hi}, ${user.email?.split("@")[0]}!'
         : t.welcome;
 
     return Scaffold(
+      drawer: const DrawerScreen(), // Side drawer attached
+
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(screenWidth * 0.05),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                greeting,
-                style: GoogleFonts.poppins(
-                  fontSize: screenWidth * 0.06,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.primaryGreen,
-                ),
-              ),
-              SizedBox(height: screenHeight * 0.03),
-              // Image in a curved box
-              Container(
-                width: double.infinity,
-                height: screenHeight * 0.25,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(15),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.2),
-                      spreadRadius: 2,
-                      blurRadius: 5,
-                      offset: const Offset(0, 3),
+        child: Builder(
+          builder: (ctx) => SingleChildScrollView(
+            padding: EdgeInsets.all(screenWidth * 0.05),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header: Greeting + Hamburger Menu
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      greeting,
+                      style: GoogleFonts.poppins(
+                        fontSize: screenWidth * 0.06,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primaryGreen,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.menu, size: 28, color: AppColors.primaryGreen),
+                      onPressed: () => Scaffold.of(ctx).openDrawer(),
                     ),
                   ],
                 ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(15),
-                  child: Image.asset(
-                    'assets/crop_image.jpg',
-                    fit: BoxFit.cover,
+
+                SizedBox(height: screenHeight * 0.03),
+
+                // Crop Image
+                Container(
+                  width: double.infinity,
+                  height: screenHeight * 0.25,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.2),
+                        spreadRadius: 2,
+                        blurRadius: 5,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
                   ),
-                ),
-              ),
-              SizedBox(height: screenHeight * 0.03),
-              _buildWeeklyWeather(screenWidth, t),
-              SizedBox(height: screenHeight * 0.03),
-              // Sensor Data Grid (2 per row)
-              Wrap(
-                spacing: 10,
-                runSpacing: 15,
-                children: [
-                  dataCard(
-                    t.espStatus,
-                    _isDeviceConnected ? t.connected : t.disconnected,
-                    _isDeviceConnected ? Colors.green : Colors.red,
-                    Icons.wifi,
-                    screenWidth,
-                    t,
-                  ),
-                  dataCard(
-                    t.batteryLevel,
-                    _batteryLevel,
-                    Colors.orange,
-                    Icons.battery_full,
-                    screenWidth,
-                    t,
-                  ),
-                  dataCard(
-                    t.temperature,
-                    _temperature,
-                    Colors.red,
-                    Icons.thermostat,
-                    screenWidth,
-                    t,
-                  ),
-                  dataCard(
-                    t.sprayStatus,
-                    _sprayStatus == 'Spraying' ? t.spraying : t.idle,
-                    _sprayStatus == 'Spraying' ? Colors.green : Colors.grey,
-                    Icons.water_drop,
-                    screenWidth,
-                    t,
-                  ),
-                ],
-              ),
-              
-              SizedBox(height: screenHeight * 0.04),
-              
-              // Blog Section
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    t.blogs,
-                    style: GoogleFonts.poppins(
-                      fontSize: screenWidth * 0.05,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(15),
+                    child: Image.asset(
+                      'assets/crop_image.jpg',
+                      fit: BoxFit.cover,
                     ),
                   ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const BlogListScreen(),
-                        ),
-                      );
-                    },
-                    child: Text(
-                      t.viewAll,
+                ),
+
+                SizedBox(height: screenHeight * 0.03),
+
+                // Weekly Weather
+                _buildWeeklyWeather(screenWidth, t),
+
+                SizedBox(height: screenHeight * 0.03),
+
+                // Sensor Data Cards
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 15,
+                  children: [
+                    dataCard(t.espStatus, _isDeviceConnected ? t.connected : t.disconnected,
+                        _isDeviceConnected ? Colors.green : Colors.red, Icons.wifi, screenWidth, t),
+                    dataCard(t.batteryLevel, _batteryLevel, Colors.orange, Icons.battery_full, screenWidth, t),
+                    dataCard(t.temperature, _temperature, Colors.red, Icons.thermostat, screenWidth, t),
+                    dataCard(t.sprayStatus, _sprayStatus == 'Spraying' ? t.spraying : t.idle,
+                        _sprayStatus == 'Spraying' ? Colors.green : Colors.grey, Icons.water_drop, screenWidth, t),
+                  ],
+                ),
+
+                SizedBox(height: screenHeight * 0.04),
+
+                // Blog Section Header
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      t.blogs,
                       style: GoogleFonts.poppins(
-                        fontSize: screenWidth * 0.04,
-                        color: AppColors.primaryGreen,
-                        fontWeight: FontWeight.w500,
+                        fontSize: screenWidth * 0.05,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
                       ),
                     ),
-                  ),
-                ],
-              ),
-              
-              SizedBox(height: screenHeight * 0.02),
-              
-              // Horizontal Blog Cards
-              SizedBox(
-                height: 320, // Increased to avoid overflow
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.only(left: 16),
-                  itemCount: _featuredBlogs.length,
-                  itemBuilder: (context, index) {
-                    return _buildBlogCard(_featuredBlogs[index], screenWidth);
-                  },
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const BlogListScreen()),
+                        );
+                      },
+                      child: Text(
+                        t.viewAll,
+                        style: GoogleFonts.poppins(
+                          fontSize: screenWidth * 0.04,
+                          color: AppColors.primaryGreen,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
+
+                SizedBox(height: screenHeight * 0.02),
+
+                // Horizontal Blog Cards
+                SizedBox(
+                  height: 320,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.only(left: 16),
+                    itemCount: _featuredBlogs.length,
+                    itemBuilder: (context, index) {
+                      return _buildBlogCard(_featuredBlogs[index], screenWidth);
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
